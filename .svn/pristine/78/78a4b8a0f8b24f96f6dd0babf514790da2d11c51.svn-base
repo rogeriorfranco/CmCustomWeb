@@ -1,0 +1,40 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomDto;
+using CmCustomBll;
+namespace CmCustomUi
+{
+    public partial class Login : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            txtUsuario.Focus();
+        }
+
+        protected void lbLogar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Usuario usuario = new Usuario();
+                usuario = LoginBll.autentication(txtUsuario.Text, txtSenha.Text);
+                Session["nomeAssociado"] = usuario.nomeAssociado;
+                Session["perfil"] = usuario.perfil;
+                Session["email"] = usuario.email;
+                Session["centroResultado"] = usuario.centroResultado;
+                Session["CPF"] = usuario.CPF;
+                Session["ultimoAcesso"] = usuario.dataUltimoAcesso;
+                Session.Timeout = 90;
+
+                Response.Redirect("Home");
+            }
+            catch (Exception ex)
+            {
+                Util.Util.Alertbootsrap(ex.Message, this, PanelAlertBootstrap);
+            }
+        }
+    }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<configuration>
+  <appSettings>
+    <add key="userID" value="ConnectMasterWEB"/>
+    <add key="password" value="C0nn3ctM@st3rW3B"/>
+    <add key="dataSource" value="CMTIT"/>
+    <add key="tnsName" value="Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.51.47.177)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CMTIT)));"/>
+    <add key="ValidationSettings:UnobtrusiveValidationMode" value="none"/>
+  </appSettings>
+  <system.web>
+    <customErrors mode="Off"/>
+    <compilation debug="true" targetFramework="4.5"/>
+    <httpRuntime targetFramework="4.5"/>
+    <sessionState timeout="60"/>
+  </system.web>
+  <system.webServer>
+    <defaultDocument>
+      <files>
+        <add value="Login.aspx"/>
+      </files>
+    </defaultDocument>
+  </system.webServer>
+</configuration>

@@ -1,0 +1,31 @@
+﻿using CmCustomDal;
+using System;
+using System.Data;
+
+namespace CmCustomBll
+{
+    public class ReportBll
+    {
+        IReportDal relatorioDal = new ReportDal();
+
+        public DataTable relatorioBandaOltTotal(string olt)
+        {
+            return relatorioDal.relatorioBandaOltTotal(olt);
+        }
+
+        public DataTable relatorioGeralFacilidade(string circuito, string cto, string olt)
+        {
+            try
+            {
+                if (circuito.Equals("") && cto.Equals("") && olt.Equals(""))
+                    throw new Exception("Favor informar pelo menos 1 parâmetro para consultar");
+
+                return relatorioDal.relatorioGeralFacilidade(circuito, cto, olt);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+    }
+}

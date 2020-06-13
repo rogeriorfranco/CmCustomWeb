@@ -1,0 +1,69 @@
+﻿$(document).ready(function () {
+    
+    if (document.location.href.indexOf('facility/search') >= 0) {
+        $('#facilitySearch-li').addClass('active');
+        $('#MenuFacilidade').addClass('active');
+        return;
+    }
+    
+    if (document.location.href.indexOf('viability/search') >= 0) {
+        $('#viabilitySearch-li').addClass('active');
+        $('#MenuViabilidade').addClass('active');
+        return;
+    }
+
+    if (document.location.href.indexOf('networkMap/search') >= 0) {
+        $('#MenuMapaRede-li').addClass('active');
+        $('#MenuMapaRede').addClass('active');
+        return;
+    }
+    if (document.location.href.indexOf('reports/oltBand') >= 0) {
+        $('#reportsolBand-li').addClass('active');
+        $('#MenuRelatorio').addClass('active');
+        return;
+    }
+
+    if (document.location.href.indexOf('reports/facilityGpon') >= 0) {
+        $('#reportsolFacilityGeral-li').addClass('active');
+        $('#MenuRelatorio').addClass('active');
+        return;
+    }
+
+    if (document.location.href.indexOf('reports/quantityNetwork') >= 0) {
+        $('#reportQuantityNetwork-li').addClass('active');
+        $('#MenuRelatorio').addClass('active');
+        return;
+    }
+
+    if (document.location.href.indexOf('reports/historicViability') >= 0) {
+        $('#reporthistoricViability-li').addClass('active');
+        $('#MenuRelatorio').addClass('active');
+        return;
+    }
+
+    if (document.location.href.indexOf('reports/quantidadeRede') >= 0) {
+        $('#reportsolQuantidadeRede-li').addClass('active');
+        $('#MenuRelatorio').addClass('active');
+        return;
+    }
+
+    if (document.location.href.indexOf('user/historic') >= 0) {
+        $('#userhistoric-li').addClass('active');
+        $('#MenuAdmistracao').addClass('active');
+        return;
+    }
+
+
+    if (document.location.href.indexOf('facility/historic') >= 0) {
+        $('#facilityhistoric-li').addClass('active');
+        $('#MenuAdmistracao').addClass('active');
+        return;
+    }
+
+});
+
+$(document).ready(function () {
+    $('#dropdownMenuUsuario').on('click', function (event) {
+        event.stopPropagation();
+    });
+});

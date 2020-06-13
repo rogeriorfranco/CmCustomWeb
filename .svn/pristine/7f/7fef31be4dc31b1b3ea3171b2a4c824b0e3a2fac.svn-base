@@ -1,0 +1,3 @@
+﻿$(document).ready(function () {
+    $('#txtDtValidadeReserva').inputmask('99/99/9999');
+});

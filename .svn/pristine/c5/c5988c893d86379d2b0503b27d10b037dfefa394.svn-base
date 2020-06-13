@@ -1,0 +1,31 @@
+﻿<?xml version="1.0"?>
+<configuration>
+  <!--<add key="userID" value="ConnectMasterWEB"/>
+  <add key="password" value="C0nn3ctM@st3rW3B"/>-->
+  <appSettings>
+    <add key="userID" value="cmsys"/>
+    <add key="password" value="cmsys"/>
+    <add key="dataSource" value="cmtit"/>
+    <add key="tnsName" value="Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.51.47.177)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CMTIT)));"/>
+  </appSettings>
+
+  <connectionStrings>
+    <add name="CmWeb" connectionString="Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.51.47.177)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CMTIT)));
+         Persist Security Info=True;User ID=ConnectMasterWEB;Password=C0nn3ctM@st3rW3B" providerName="Oracle.ManagedDataAccess.Client"/>
+  </connectionStrings>
+  
+  <system.web>
+    <customErrors mode="Off"/>
+    <compilation debug="true" targetFramework="4.5" />
+    <httpRuntime targetFramework="4.5" />
+  </system.web>
+
+  <system.webServer>
+    <defaultDocument>
+      <files>
+        <add value="Login.aspx"/>
+      </files>
+    </defaultDocument>
+  </system.webServer>
+
+</configuration>

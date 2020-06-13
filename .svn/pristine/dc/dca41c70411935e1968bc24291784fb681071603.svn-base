@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CmCustomDto;
+
+namespace CmCustomDal
+{
+    public class FacilityHistoricDal : CrudDAL<Facility>, IFacilityHistoricDal
+    {
+        public void save(Facility facility)
+        {
+            create(facility);            
+        }
+    }
+}

@@ -1,0 +1,94 @@
+﻿using DDesign.API;
+using DDesign.API.Components;
+using Attribute = DDesign.API.Attributes.Attribute;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CmCustomDto;
+
+namespace CmCustomDal
+{
+    public class OperationsCmApiDal : IOperationsCmApiDal
+    {
+        static ConnectMasterAPI cmAPI = connectionPool();
+        static ConnectMasterAPI connectionPool()
+        {
+            ConnectMasterAPI mAPI = cmAPI;
+            if (mAPI == null)
+            {
+                mAPI = ConnectionCmDal.getConnectionCm();
+            }
+            return mAPI;
+        }
+
+        public void atualizaPontoCompoment(int compPointID, string circuito, string status)
+        {
+            IFacilityDal facilityDal = new FacilityDal();
+            ComponentPoint componentPoint = cmAPI.ComponentPoints.ReadElement(compPointID) as ComponentPoint;
+            componentPoint.ObjectState.StateTypeId = facilityDal.getIdStatusCompomentPoint(status);
+            componentPoint.Description = circuito;
+            componentPoint.UpdateDetails();
+        }
+
+        public void atualizaAtributosPortaOLT(Olt olt)
+        {
+            Dictionary<int, IEnumerable<int>> attributosPortid = ReadAttributePortsIds(olt.idSubPorta);
+            List<Attribute> listaElements = new List<Attribute>();
+
+            foreach (int attrId in attributosPortid[olt.idSubPorta])
+            {
+                Attribute attributPorts = cmAPI.Attributes.ReadElement(attrId) as Attribute;
+
+                if (attributPorts.Name.Equals("STATUS"))
+                    attributPorts.Value = olt.status;
+                if (attributPorts.Name.Equals("CIRCUITO"))
+                    attributPorts.Value = olt.circuito;
+                if (attributPorts.Name.Equals("CLIENTE"))
+                    attributPorts.Value = olt.cliente;
+                if (attributPorts.Name.Equals("BANDA_MB"))
+                    attributPorts.Value = olt.banda_mb;
+                if (attributPorts.Name.Equals("BANDA_UPLINK"))
+                    attributPorts.Value = olt.banda_uplink;
+                if (attributPorts.Name.Equals("SERIAL_ONT"))
+                    attributPorts.Value = olt.serial;
+                if (attributPorts.Name.Equals("PRODUTO"))
+                    attributPorts.Value = olt.produto;
+                if (attributPorts.Name.Equals("BAIRRO"))
+                    attributPorts.Value = olt.bairro;
+                if (attributPorts.Name.Equals("VLAN_OUTER:INNER"))
+                    attributPorts.Value = olt.vlan_outer_inner;
+                if (attributPorts.Name.Equals("ONT_ID"))
+                    attributPorts.Value = olt.ont_id;
+                if (attributPorts.Name.Equals("LOGRADOURO") && olt.idlogradouro != 0)
+                    attributPorts.Value = olt.idlogradouro;                
+                if (attributPorts.Name.Equals("NUMERO_LOTE"))
+                    attributPorts.Value = olt.nro_lote;
+                //if (attributPorts.Name.Equals("COMPLEMENTO_NIVEL_1"))
+                //    attributPorts.Value = olt.compl_nivel_1;
+                //if (attributPorts.Name.Equals("COMPLEMENTO_NIVEL_1_DESCRICAO"))
+                //    attributPorts.Value = olt.compl_nivel_1_descricao;
+                //if (attributPorts.Name.Equals("COMPLEMENTO_NIVEL_2"))
+                //    attributPorts.Value = olt.compl_nivel_2;
+                //if (attributPorts.Name.Equals("COMPLEMENTO_NIVEL_2_DESCRICAO"))
+                //    attributPorts.Value = olt.compl_nivel_2_descricao;
+                //if (attributPorts.Name.Equals("COMPLEMENTO_NIVEL_3"))
+                //    attributPorts.Value = olt.compl_nivel_3;
+                //if (attributPorts.Name.Equals("COMPLEMENTO_NIVEL_3_DESCRICAO"))
+                //    attributPorts.Value = olt.compl_nivel_3_descricao;
+                if (attributPorts.Name.Equals("VALIDADE_RESERVA"))
+                    attributPorts.Value = olt.validade_reserva;
+
+                listaElements.Add(attributPorts);
+            }
+            cmAPI.Attributes.UpdateDetails(listaElements);
+        }
+
+        public Dictionary<int, IEnumerable<int>> ReadAttributePortsIds(int id)
+        {
+            return cmAPI.Ports.ReadAttributeIds(new List<int> { id });
+        }
+
+    }
+}

@@ -1,0 +1,27 @@
+﻿using CmCustomDal;
+using CmCustomDto;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomBll
+{
+    public class FacilityHistoricBll 
+    {
+        IFacilityHistoricDal facilityHistoricDal = new FacilityHistoricDal();
+
+        public void save(Facility facility)
+        {
+            facilityHistoricDal.save(facility);
+        }
+
+        public DataTable consultaHistorico()
+        {
+            return facilityHistoricDal.consultaHistorico();
+        }
+
+    }
+}

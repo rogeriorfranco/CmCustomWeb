@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDto
+{
+    public class Cto
+    {
+        public string nome { get; set; }
+        public string estacao { get; set; }
+        public string cnl { get; set; }
+        public string porta { get; set; }
+        public string tecnologia { get; set; }
+        public string status { get; set; }
+        public string circuito { get; set; }
+        public string localidade { get; set; }
+    }
+}

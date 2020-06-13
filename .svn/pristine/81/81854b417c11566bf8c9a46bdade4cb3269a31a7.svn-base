@@ -1,0 +1,22 @@
+﻿using CmCustomDto;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDal
+{
+    public interface IFacilityDal
+    {
+        DataTable consultaFacilidades(string circuito, string produto, string status, string cnl, string serial, string cto,
+            string olt, string ipOlt, string cto_antigo, string outerVlan, string innerVlan);
+        //DataRow getFacilityCTOByIdPonto(int idPonto);
+        DataRow getFacilityOLTByIdSubPorta(int idSubporta, int componentIdCto);
+        int getIdStatusCompomentPoint(string status);
+        int getIdSubPortaVagoByPorta(int idporta);
+        DataTable getFacilitysRedesignate(string cto, string ip, int pointId);
+        Olt getOLTAttributsByIdSubPorta(int idSubporta);
+    }
+}

@@ -1,0 +1,44 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomBll;
+using System.Data;
+namespace CmCustomUi.reports
+{
+    public partial class facilityGpon : System.Web.UI.Page
+    {
+        static DataTable dt;
+        private void fillReport()
+        {
+            try
+            {
+                ReportBll relatorioBll = new ReportBll();
+                dt = relatorioBll.relatorioGeralFacilidade(txtCircuito.Text, txtCto.Text, txtOlt.Text);
+                gvGpon.DataSource = dt;
+                gvGpon.DataBind();
+            }
+            catch (Exception ex)
+            {
+                Utility.Alertbootsrap(ex.Message, this, upPesquisar);
+            }
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void lbPesquisar_Click(object sender, EventArgs e)
+        {
+            fillReport();
+        }
+
+        protected void lbExportar_Click(object sender, EventArgs e)
+        {
+            Utility.ExportarDataTableExcel(dt, "Facilidade GPON");
+        }
+    }
+}

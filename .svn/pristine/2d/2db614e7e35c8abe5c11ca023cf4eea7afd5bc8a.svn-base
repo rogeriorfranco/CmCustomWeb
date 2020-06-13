@@ -1,0 +1,169 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDal
+{
+    public class LocalityDal : ILocalityDal
+    {
+        StringBuilder sql = new StringBuilder();
+
+        public DataRow getCodLocalidadeCodLogradouro(string localidade, string logradouro)
+        {
+            try
+            {
+
+                sql.Append("SELECT ");
+
+                sql.Append("(SELECT ATTR.A_VALUE FROM ARD_ATTR_RED ATTR ");
+                sql.Append("WHERE ATTR.AT_NAME = 'COD_LOG' ");
+                sql.Append("AND ATTR.LINK_ID = SUB.ID_LOGRADOURO) AS COD_LOG ");
+
+                sql.Append(",(SELECT ATTR.A_VALUE FROM ARD_ATTR_RED ATTR ");
+                sql.Append("WHERE ATTR.AT_NAME = 'COD_LOCALIDADE' ");
+                sql.Append("AND ATTR.LINK_ID = SUB.ID_LOCALIDADE) AS COD_LOCALIDADE ");
+
+                sql.Append("FROM( ");
+                sql.Append("SELECT DESI.DESIGNATION_ID AS ID_LOGRADOURO ");
+                sql.Append(",DESI.PARENT_ID AS ID_LOCALIDADE ");
+                sql.Append("FROM DES_DESIGNATION DESI ");
+                sql.Append("WHERE DESI.DESIG_KIND_ID = 256 ");
+                sql.Append("AND DESI.DSY_ID = 10 ");
+                sql.Append("AND DESI.TEXT LIKE '%" + logradouro.ToUpper() + "%' ");
+                sql.Append("AND DESI.DESIGLEVELID = 35 ");
+                sql.Append("AND DESI.PARENT_ID = ( ");
+
+                sql.Append("SELECT DESI.DESIGNATION_ID ");
+                sql.Append("FROM DES_DESIGNATION DESI ");
+                sql.Append("WHERE DESI.DESCRIPTION LIKE '%" + localidade.ToUpper() + "%' ");
+                sql.Append("AND DESI.DSY_ID = 10 ");
+                sql.Append("AND DESI.DESIGLEVELID = 34) ");
+                sql.Append(")SUB ");
+
+                return ConnectionOracleDal.ExecutaSqlRetornoRegistro(sql.ToString());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+
+        public int getLogradouroIdByCodLogradouro(string codLogradouro, string codLocalidade)
+        {
+            try
+            {
+                sql.Append("SELECT ");
+                sql.Append("(SELECT DESI.DESIGNATION_ID ");
+                sql.Append("FROM CMSYS.ARD_ATTR_RED ATTR ");
+                sql.Append(",CMSYS.DES_DESIGNATION DESI ");
+                sql.Append("WHERE ATTR.LINK_ID = DESI.DESIGNATION_ID ");
+                sql.Append("AND ATTR.AT_NAME = 'COD_LOG' ");
+                sql.Append("AND ATTR.A_VALUE = '" + codLogradouro + "' ");
+                sql.Append("AND DESI.DESIG_KIND_ID = 256 ");
+                sql.Append("AND DESI.PARENT_ID = ATT.LINK_ID ");
+                sql.Append("AND DESI.DSY_ID = 10) AS ID_LOGRADOURO ");
+
+                sql.Append("FROM CMSYS.ARD_ATTR_RED ATT ");
+                sql.Append(",CMSYS.DES_DESIGNATION D ");
+                sql.Append("WHERE ATT.LINK_ID = D.DESIGNATION_ID ");
+                sql.Append("AND ATT.AT_NAME = 'COD_LOCALIDADE' ");
+                sql.Append("AND ATT.A_VALUE = '" + codLocalidade + "' ");
+                sql.Append("AND D.DSY_ID = 10 ");
+
+                DataRow dr = ConnectionOracleDal.ExecutaSqlRetornoRegistro(sql.ToString());
+                return (dr != null ? Convert.ToInt32(dr["ID_LOGRADOURO"]) : 0);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+
+        public int getLogradouroIdByLogradouroLocalidade(string Logradouro, string Localidade)
+        {
+            try
+            {
+                sql.Append("SELECT DESI.DESIGNATION_ID ");
+                sql.Append("FROM DES_DESIGNATION DESI ");
+                sql.Append("WHERE DESI.DESIG_KIND_ID = 256 ");
+                sql.Append("AND DESI.DSY_ID = 10 ");
+                sql.Append("AND DESI.TEXT LIKE '%" + Logradouro + "%' ");
+                sql.Append("AND DESI.DESIGLEVELID = 35 ");
+                sql.Append("AND DESI.PARENT_ID = ( ");
+
+                sql.Append("SELECT DESI.DESIGNATION_ID ");
+                sql.Append("FROM DES_DESIGNATION DESI ");
+                sql.Append("WHERE DESI.DESCRIPTION = '" + Localidade + "' ");
+                sql.Append("AND DESI.DSY_ID = 10 ");
+                sql.Append("AND DESI.DESIGLEVELID = 34) ");
+
+                DataRow dr = ConnectionOracleDal.ExecutaSqlRetornoRegistro(sql.ToString());
+                return (dr != null ? Convert.ToInt32(dr["DESIGNATION_ID"]) : 0);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+
+        public DataTable getLogradouroByLocalidade(string localidade)
+        {
+            try
+            {
+                sql.Append("SELECT D.DESIGNATION_ID, REGEXP_SUBSTR(D.TEXT, '[^(]+', 1, 1) AS LOGRADOURO ");
+                sql.Append("FROM DES_DESIGNATION D ");
+                sql.Append("WHERE D.PARENT_ID = ");
+                sql.Append("(SELECT D.DESIGNATION_ID ");
+                sql.Append("FROM DES_DESIGNATION D ");
+                sql.Append("WHERE D.DESCRIPTION = '" + localidade + "' ");
+                sql.Append("AND D.DESIGLEVELID = 34) ");
+                sql.Append("AND D.DESIG_KIND_ID = 256 ");
+                sql.Append("ORDER BY D.TEXT ");
+                return ConnectionOracleDal.ExecutaSqlRetorno(sql.ToString()).Tables[0];
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+
+        public List<string> getBairroByIdLogradouro(int idLogradouro)
+        {
+            try
+            {
+                sql.Append("SELECT D.TEXT AS BAIRRO ");
+                sql.Append("FROM DES_DESIGNATION D ");
+                sql.Append("WHERE D.PARENT_ID = " + idLogradouro + " ");
+                sql.Append("AND D.DESIG_KIND_ID = 262 ");
+                return ConnectionOracleDal.ExecutaSqlReaderGeneric<string>(sql.ToString());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+    }
+}

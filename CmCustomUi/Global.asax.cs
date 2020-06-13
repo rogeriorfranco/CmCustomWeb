@@ -1,0 +1,80 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.SessionState;
+using System.Web.Routing;
+using System.Data.Entity;
+
+namespace CmCustomUi
+{
+    public class Global : System.Web.HttpApplication
+    {
+
+        protected void Application_Start(object sender, EventArgs e)
+        {            
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+        }
+
+        protected void Session_Start(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void Application_BeginRequest(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void Application_AuthenticateRequest(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void Application_Error(object sender, EventArgs e)
+        {
+            Exception exception = Server.GetLastError();
+            System.Text.StringBuilder str = new System.Text.StringBuilder();
+
+            string path = @"D:\LogCustomWeb.txt";            
+            using (System.IO.StreamWriter sw = System.IO.File.AppendText(path))
+            {
+
+                str.Append(" Data: " + DateTime.Now.ToString());
+                str.Append(Environment.NewLine + " Error: " + exception.Message.ToString());
+                str.Append(Environment.NewLine + " Details: " + exception.InnerException.Message.ToString());
+                str.Append(Environment.NewLine + " URL: " + Request.Url.AbsoluteUri.ToString());
+                str.Append(Environment.NewLine + " Stack Trace: " + exception.InnerException.StackTrace.ToString());
+                str.Append(Environment.NewLine + " Request Host: " + Request.UserHostAddress.ToString());
+                str.Append(Environment.NewLine + " Host Name: " + Request.UserHostName.ToString());
+                str.Append(Environment.NewLine + " User Agent: " + Request.UserAgent.ToString());
+                if (Request.UrlReferrer != null)
+                {
+                    str.Append(Environment.NewLine + " URL Referrer: " + Request.UrlReferrer.ToString());
+                }
+                str.Append(Environment.NewLine + " UserName: " + Request.LogonUserIdentity.Name.ToString());
+                str.Append(Environment.NewLine + " Method: " + exception.TargetSite.ToString());
+                str.Append(Environment.NewLine + " Source: " + exception.Source.ToString());
+                str.Append(Environment.NewLine + " Usuário: " + Session["usuario"]);
+
+
+                sw.WriteLine(str.ToString());
+            }
+
+
+
+            
+        }
+
+        protected void Session_End(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void Application_End(object sender, EventArgs e)
+        {
+
+        }
+    }
+}

@@ -1,0 +1,42 @@
+﻿using CmCustomDal;
+using CmCustomDto;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomBll
+{
+    public class OperationsCmApiBll
+    {
+        IOperationsCmApiDal operationsCmAPI = new OperationsCmApiDal();
+        public void atualizaPontoCompoment(int compPointID, string circuito, string status, Olt olt, Facility facility)
+        {
+            try
+            {
+                operationsCmAPI.atualizaPontoCompoment(compPointID, circuito, status);
+
+                //if (olt.idSubPorta != null)
+                //{
+                    operationsCmAPI.atualizaAtributosPortaOLT(olt);
+                //}
+
+
+                IFacilityHistoricDal facilityHistoricDal = new FacilityHistoricDal();
+                facilityHistoricDal.save(facility);
+
+                throw new Exception("Facilidades alteradas");
+
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+
+        }
+    }
+}

@@ -1,0 +1,33 @@
+﻿using DDesign.API;
+using DDesign.API.Components;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDal
+{
+    public class OperationsCmApiDal : IOperationsCmApiDal
+    {
+        static ConnectMasterAPI cmAPI = connectionPool();
+        static ConnectMasterAPI connectionPool()
+        {
+            ConnectMasterAPI mAPI = cmAPI;
+            if (mAPI == null)
+            {
+                mAPI = ConnectionCmDal.getConnectionCm();
+            }
+            return mAPI;
+        }
+
+        public void atualizaPontoCompoment(int compPointID, string circuito, string status)
+        {
+            IFacilityDal facilityDal = new FacilityDal();
+            ComponentPoint componentPoint = cmAPI.ComponentPoints.ReadElement(compPointID) as ComponentPoint;
+            componentPoint.ObjectState.StateTypeId = facilityDal.getIdStatusCompomentPoint(status);
+            componentPoint.Description = circuito;
+            componentPoint.UpdateDetails();
+        }
+    }
+}

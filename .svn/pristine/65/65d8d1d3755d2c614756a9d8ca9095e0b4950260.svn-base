@@ -1,0 +1,55 @@
+﻿$(document).ready(function () {
+    $('#txtDtValidadeReserva').inputmask('99/99/9999');
+});
+
+$(document).ready(function () {
+    $("#txtOnt").keypress(function (e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });
+});
+
+
+$(document).ready(function () {
+    $("#txtBandaMB").keypress(function (e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });
+});
+
+$(document).ready(function () {
+    $("#txtBandaUpLink").keypress(function (e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });
+});
+
+$(document).ready(function () {
+    $("#txtVlanInner").keypress(function (e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });
+});
+
+$(document).ready(function () {
+    $("#txtVlan").keypress(function (e) {
+        if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });
+});
+
+$(document).ready(function () {
+    $('#ddlStatus').change(function () {
+        if (this.value == "RESERVADO") {            
+            $("#txtDtValidadeReserva").prop('disabled', false);
+        } else {
+            $("#txtDtValidadeReserva").prop('disabled', true);
+            $('#txtDtValidadeReserva').val('');
+        }
+    });
+});

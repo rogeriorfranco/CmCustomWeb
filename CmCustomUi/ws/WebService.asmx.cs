@@ -1,0 +1,60 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Services;
+using CmCustomBll;
+using System.Web.Script.Services;
+
+namespace CmCustomUi.ws
+{
+    /// <summary>
+    /// Summary description for WebService
+    /// </summary>
+    [WebService(Namespace = "http://tempuri.org/")]
+    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+    [System.ComponentModel.ToolboxItem(false)]
+    [System.Web.Script.Services.ScriptService]
+    public class WebService : System.Web.Services.WebService
+    {
+        [WebMethod]
+        public List<string> getBairroByIdLogradouro(int idLogradouro)
+        {
+            LocalityBll localityBll = new LocalityBll();
+            return localityBll.getBairroByIdLogradouro(idLogradouro);
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<string> getLogradouroByIdLocalidade(int idLocalidade, string logradouro)
+        {
+            LocalityBll localityBll = new LocalityBll();
+            return localityBll.getLogradouroByIdLocalidade(idLocalidade, logradouro);
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<string> getLogradouroByLocalidade(string localidade, string logradouro)
+        {
+            LocalityBll localityBll = new LocalityBll();
+            return localityBll.getLogradouroByLocalidade(localidade, logradouro);
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<string> getMunicipioByEstado(string estado, string municipio)
+        {
+            LocalityBll localityBll = new LocalityBll();
+            return localityBll.getMunicipioByEstado(estado, municipio);
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<string> getLocalidadeByMunicipio(int idMunicipio, string localidade)
+        {
+            LocalityBll localityBll = new LocalityBll();
+            return localityBll.getLocalidadeByMunicipio(idMunicipio, localidade);
+        }
+
+    }
+}

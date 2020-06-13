@@ -1,0 +1,48 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CmCustomDto;
+using System.Data;
+
+namespace CmCustomDal
+{
+    public class FacilityHistoricDal : CrudDAL<Facility>, IFacilityHistoricDal
+    {
+        public void save(Facility facility)
+        {
+            create(facility);            
+        }
+
+
+        StringBuilder sql = new StringBuilder();
+        public DataTable consultaHistorico()
+        {
+            try
+            {
+                sql.Append("SELECT * FROM API.HISTORICO_FACILIDADE ");                
+                sql.Append("WHERE USUARIO IS NOT NULL ");
+
+                //if (usuario != "")
+                //    sql.Append("AND USUARIO LIKE '%" + usuario + "%'");
+                //if (dtInicio != "")
+                //    sql.Append("AND DT_ULTIMO_ACESSO >= '" + dtInicio + " 00:00:01' ");
+                //if (dtInicio != "")
+                //    sql.Append("AND DT_ULTIMO_ACESSO <= '" + dtFim + " 23:59:59' ");
+
+                sql.Append("ORDER BY DATA_ALTERACAO DESC ");
+
+                return ConnectionOracleDal.ExecutaSqlRetorno(sql.ToString()).Tables[0];
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+    }
+}

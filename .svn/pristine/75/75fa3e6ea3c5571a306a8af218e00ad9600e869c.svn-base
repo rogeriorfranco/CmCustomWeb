@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public class Utility
+{
+    /// <summary>
+    /// Método de paginação do gridview
+    /// </summary>
+    /// <param name="gridView">passar o nome do gridview</param>
+    /// <param name="e"></param>
+    /// <param name="dt">fonte de dados</param>
+    public static void PaginacaoGridView(GridView gridView, GridViewPageEventArgs e, object dt)
+    {
+        gridView.DataSource = dt;
+        gridView.PageIndex = e.NewPageIndex;
+        gridView.DataBind();
+    }
+
+    public static void Alertbootsrap(string msg, Page page, UpdatePanel up)
+    {
+        try
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine("$(document).ready(function() {");
+            sb.AppendLine("$('.modal-body #modalId').html('" + msg + "') ");
+            sb.AppendLine("$('#myModal').modal('show');");
+            sb.AppendLine(" });");
+            UserControl uc = (UserControl)page.LoadControl("~/UserControls/UserControlAlertBootstrap.ascx");
+            up.ContentTemplateContainer.Controls.Add(uc);
+            ScriptManager.RegisterClientScriptBlock(page, typeof(Page), Guid.NewGuid().ToString(), sb.ToString(), true);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public static void AlertbootsrapConfirm(string msg, Page page, UpdatePanel up)
+    {
+        try
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine("$(document).ready(function() {");
+            sb.AppendLine("$('.modal-body #modalId').html('" + msg + "') ");            
+            sb.AppendLine("$('#myModal').modal('show');");
+            sb.AppendLine(" });");            
+            ScriptManager.RegisterClientScriptBlock(page, typeof(Page), Guid.NewGuid().ToString(), sb.ToString(), true);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+
+    public static void ExportarDataTableExcel(object dt, string nomeArquivo)
+    {        
+        HttpResponse objResponse = HttpContext.Current.Response;        
+        objResponse.Clear();
+        objResponse.ContentEncoding = System.Text.Encoding.GetEncoding("ISO-8859-1");        
+        objResponse.AddHeader("content-disposition", "attachment;filename=" + nomeArquivo + ".xls");        
+        objResponse.ContentType = "application/vnd.ms-excel";        
+        StringWriter stringWrite = new StringWriter();        
+        HtmlTextWriter htmlWrite = new HtmlTextWriter(stringWrite);
+        DataGrid dg = new DataGrid();
+        dg.DataSource = dt;
+        dg.DataBind();
+        dg.RenderControl(htmlWrite);
+        objResponse.Write(stringWrite.ToString());        
+        //objResponse.Flush();
+        objResponse.End();
+    }
+}

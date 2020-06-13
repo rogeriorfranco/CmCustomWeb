@@ -1,0 +1,64 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDto
+{
+    public class Olt
+    {
+        public int idSubPorta { get; set; }
+        public int idComponent { get; set; }        
+        public string status { get; set; }
+        public string circuito { get; set; }
+        public string cliente { get; set; }        
+        public string acao { get; set; }
+
+        public string vlan_inner { get; set; }
+        public string vlan_outer { get; set; }
+
+        private string _banda_mb;
+        public string banda_mb
+        {
+            get { return (!string.IsNullOrEmpty(_banda_mb.ToString()) ? _banda_mb : "0"); }
+            set { _banda_mb = value; }
+        }
+        private string _banda_uplink;
+        public string banda_uplink
+        {
+            get { return (!string.IsNullOrEmpty(_banda_uplink.ToString()) ? _banda_uplink : "0"); }
+            set { _banda_uplink = value; }
+        }
+
+        private string _nro_lote;
+        public string nro_lote
+        {
+            get { return (!string.IsNullOrEmpty(_nro_lote.ToString()) ? _nro_lote : "0"); }
+            set { _nro_lote = value; }
+        }
+
+        public string logradouro { get; set; }
+        public string localidade { get; set; }
+        public int idlogradouro { get; set; }
+        public string serial { get; set; }
+        public string produto { get; set; }
+        public string bairro { get; set; }        
+        public string validade_reserva { get; set; }
+        public string modelo { get; set; }
+        public string ipOlt { get; set; }
+        public string nome { get; set; }
+        public string shelf { get; set; }
+        public string slot { get; set; }
+        public string porta { get; set; }
+        public string tecnologia { get; set; }
+        public string ont_id { get; set; }
+        public string compl_nivel_1 { get; set; }
+        public string compl_nivel_1_descricao { get; set; }
+        public string compl_nivel_2 { get; set; }
+        public string compl_nivel_2_descricao { get; set; }
+        public string compl_nivel_3 { get; set; }
+        public string compl_nivel_3_descricao { get; set; }
+    }
+}
+

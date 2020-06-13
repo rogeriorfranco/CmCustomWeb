@@ -1,0 +1,81 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomBll;
+using CmCustomDto;
+using System.Data;
+
+namespace CmCustomUi.facility
+{
+    public partial class search : System.Web.UI.Page
+    {
+        static DataTable dt;
+        private void fillGrid()
+        {
+            FacilityBll facilityBll = new FacilityBll();
+            dt = facilityBll.consultaFacilidades(txtCircuito.Text, txtProduto.Text, txtStatus.Text, txtCnl.Text, txtSerial.Text,
+                txtCto.Text, txtOlt.Text, txtIpOlt.Text, txtVlanCompartilhada.Text, txtOuterVlan.Text, txtInnerVlan.Text);
+            gvFacilidade.DataSource = dt;
+            gvFacilidade.DataBind();
+        }
+
+        private void paginacao(GridViewPageEventArgs e)
+        {
+            Utility.PaginacaoGridView(gvFacilidade, e, dt);
+        }
+
+        private void selectRow()
+        {
+            Session["POINT_ID"] = gvFacilidade.DataKeys[gvFacilidade.SelectedIndex].Values[0];
+            Session["COMPONENT_ID_PORTA_OLT"] = gvFacilidade.DataKeys[gvFacilidade.SelectedIndex].Values[1];
+            Session["ID_SUB_PORTA"] = gvFacilidade.DataKeys[gvFacilidade.SelectedIndex].Values[2];
+
+            if (Session["ID_SUB_PORTA"] == DBNull.Value)
+            {
+                Olt olt = new Olt();
+                olt.nome = gvFacilidade.SelectedRow.Cells[11].Text;
+                olt.modelo = gvFacilidade.SelectedRow.Cells[12].Text;
+                olt.ipOlt = gvFacilidade.SelectedRow.Cells[13].Text;
+                olt.shelf = gvFacilidade.SelectedRow.Cells[7].Text;
+                olt.slot = gvFacilidade.SelectedRow.Cells[8].Text;
+                olt.porta = gvFacilidade.SelectedRow.Cells[9].Text;
+                olt.tecnologia = gvFacilidade.SelectedRow.Cells[10].Text;
+                Session["olt_search"] = olt;
+            }
+
+            //Cto cto = new Cto();
+            //cto.nome = gvFacilidade.SelectedRow.Cells[1].Text;
+            //cto.estacao = gvFacilidade.SelectedRow.Cells[5].Text;
+            //cto.cnl = gvFacilidade.SelectedRow.Cells[6].Text;
+            //cto.porta = gvFacilidade.SelectedRow.Cells[2].Text;
+            //cto.status = gvFacilidade.SelectedRow.Cells[3].Text;
+            //Session["cto_search"] = cto;
+            Response.Redirect("change");
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {           
+            if (!Page.IsPostBack)
+                fillGrid();
+        }
+
+        protected void gvFacilidade_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            paginacao(e);
+        }
+
+        protected void lbPesquisar_Click(object sender, EventArgs e)
+        {
+            fillGrid();
+        }
+
+        protected void gvFacilidade_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            selectRow();
+        }
+
+    }
+}

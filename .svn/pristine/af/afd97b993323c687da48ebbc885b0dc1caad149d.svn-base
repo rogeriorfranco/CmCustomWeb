@@ -1,0 +1,65 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CmCustomDal;
+using System.Data;
+using CmCustomDto;
+
+namespace CmCustomBll
+{
+    public class FacilityBll
+    {
+        IFacilityDal facilityDal = new FacilityDal();
+
+        public DataTable consultaFacilidades(string circuito, string estacao, string status, string cnl, string serial, string cto,
+            string olt, string ipOlt, string cto_antigo, string outerVlan, string innerVlan)
+        {
+            //try
+            //{
+            if (circuito.Equals("") && estacao.Equals("") && status.Equals("0") && cnl.Equals("") && serial.Equals("") && cto.Equals("") &&
+                olt.Equals("") && ipOlt.Equals("") && cto_antigo.Equals("") && outerVlan.Equals("") && innerVlan.Equals(""))
+                status = "VAGO";
+
+            return facilityDal.consultaFacilidades(circuito, estacao, status, cnl, serial, cto, olt, ipOlt, cto_antigo, outerVlan, innerVlan);
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new Exception(ex.Message);
+            //}
+
+        }
+
+        public int getIdSubPortaVagoByPorta(int idporta)
+        {
+            return facilityDal.getIdSubPortaVagoByPorta(idporta);
+        }
+
+        //public DataRow getFacilityCTOByIdPonto(int idPonto)
+        //{
+        //    return facilityDal.getFacilityCTOByIdPonto(idPonto);
+        //}
+
+        public DataRow getFacilityOLTByIdSubPorta(int idSubporta, int componentIdCto)
+        {
+            return facilityDal.getFacilityOLTByIdSubPorta(idSubporta,componentIdCto);
+        }
+
+        public DataTable getFacilitysRedesignate(string cto, string ip, int pointId)
+        {
+            return facilityDal.getFacilitysRedesignate(cto, ip, pointId);
+        }
+
+        //public Olt getOLTAttributsByIdSubPorta(int idSubporta)
+        //{
+        //    return facilityDal.getOLTAttributsByIdSubPorta(idSubporta);
+        //}
+
+
+        public DataTable getModelOnt(string fabricante)
+        {
+            return facilityDal.getModelOnt(fabricante);
+        }
+    }
+}

@@ -1,0 +1,123 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomBll;
+using CmCustomDto;
+using System.Data;
+
+namespace CmCustomUi.facility
+{
+    public partial class search : System.Web.UI.Page
+    {
+        static DataTable dt;
+        private void fillGrid()
+        {
+            FacilityBll facilityBll = new FacilityBll();
+            dt = facilityBll.consultaFacilidades(txtCircuito.Text, txtProduto.Text, ddlStatus.SelectedValue, txtCnl.Text, txtSerial.Text,
+                txtCto.Text, txtOlt.Text, txtIpOlt.Text, txtVlanCompartilhada.Text, txtOuterVlan.Text, txtInnerVlan.Text);
+            lblTotalTitulo.Text = " (" + dt.Rows.Count + ")";
+            gvFacilidade.DataSource = dt;
+            gvFacilidade.DataBind();
+        }
+
+        private void paginacao(GridViewPageEventArgs e)
+        {
+            Utility.PaginacaoGridView(gvFacilidade, e, dt);
+        }
+
+        private void selectRow()
+        {
+            Session["POINT_ID"] = gvFacilidade.DataKeys[gvFacilidade.SelectedIndex].Values["POINT_ID"];
+            Session["COMPONENT_ID_PORTA_OLT"] = gvFacilidade.DataKeys[gvFacilidade.SelectedIndex].Values["COMPONENT_ID_PORTA_OLT"];
+            Session["ID_SUB_PORTA"] = gvFacilidade.DataKeys[gvFacilidade.SelectedIndex].Values["ID_SUB_PORTA"];
+
+            if (Session["ID_SUB_PORTA"] == DBNull.Value)
+            {
+                Olt olt = new Olt();
+                olt.nome = gvFacilidade.SelectedRow.Cells[11].Text;
+                olt.modelo = gvFacilidade.SelectedRow.Cells[12].Text;
+                olt.ipOlt = gvFacilidade.SelectedRow.Cells[13].Text;
+                olt.shelf = gvFacilidade.SelectedRow.Cells[7].Text;
+                olt.slot = gvFacilidade.SelectedRow.Cells[8].Text;
+                olt.porta = gvFacilidade.SelectedRow.Cells[9].Text;
+                olt.tecnologia = gvFacilidade.SelectedRow.Cells[10].Text;
+                Session["olt_search"] = olt;
+            }
+
+            //Cto cto = new Cto();
+            //cto.nome = gvFacilidade.SelectedRow.Cells[1].Text;
+            //cto.estacao = gvFacilidade.SelectedRow.Cells[5].Text;
+            //cto.cnl = gvFacilidade.SelectedRow.Cells[6].Text;
+            //cto.porta = gvFacilidade.SelectedRow.Cells[2].Text;
+            //cto.status = gvFacilidade.SelectedRow.Cells[3].Text;
+            //Session["cto_search"] = cto;
+            Response.Redirect("change");
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!Page.IsPostBack)
+                fillGrid();
+        }
+
+        protected void gvFacilidade_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            paginacao(e);
+        }
+
+        protected void lbPesquisar_Click(object sender, EventArgs e)
+        {
+            fillGrid();
+        }
+        
+        protected void gvFacilidade_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                Label lblStatus = (Label)e.Row.FindControl("lblStatus");
+                LinkButton lbEdit = (LinkButton)e.Row.FindControl("lbEdit");
+
+                if (gvFacilidade.DataKeys[e.Row.RowIndex].Values[1] == DBNull.Value)
+                {
+                    lbEdit.Visible = false;
+                    lbEdit.ToolTip = "Não é possível editar CTO sem conexão";
+                }
+                else
+                {
+                    lbEdit.Visible = true;
+                    lbEdit.ToolTip = "Editar";
+                }
+
+                switch (lblStatus.Text)
+                {
+                    case "VAGO":
+                        lblStatus.Attributes.Add("class", "label label-primary");
+                        break;
+                    case "OCUPADO":
+                        lblStatus.Attributes.Add("class", "label label-success");
+                        break;
+                    case "DESIGNADO":
+                        lblStatus.Attributes.Add("class", "label label-warning");
+                        break;
+                    case "DEFEITO":
+                        lblStatus.Attributes.Add("class", "label label-danger");
+                        break;
+                    case "RESERVADO":
+                        lblStatus.Attributes.Add("class", "label label-info");
+                        break;
+                }
+            }
+
+        }
+
+        protected void gvFacilidade_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            selectRow();
+        }
+
+
+    }
+}

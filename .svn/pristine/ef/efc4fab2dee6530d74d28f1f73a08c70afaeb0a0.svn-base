@@ -1,0 +1,29 @@
+﻿$(document).ready(function () {
+
+    $("#button").click(function () {
+        //alert('button clicked');
+        getViability();
+    });
+
+});
+
+
+
+function getViability() {
+    $.ajax({
+        type: "GET",
+        url: "http://10.51.47.176/CmCustomAPI/Aprovisionamento/VIABILIDADE/CTBC/100/BANDA%20LARGA/100/100/32549/BR/OCUPADO/FALSO/9031293019/N/GPON/46/BRASIL/1000/RUA/RUA%20TESTE1/RUA/RUA%20TESTE2/RUA/RUA%20TESTE3/ANTIGO/31012017",
+        //data: '{ telefone:"' + telefone + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            if (data.d != null) {
+                alert(data.d['porta_logica']);
+            }
+        },
+        error: function () {
+            alert("An error has occurred during processing your request - viability.getViability()");
+        }
+    });
+
+}

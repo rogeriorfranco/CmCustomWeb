@@ -1,0 +1,571 @@
+﻿using CmCustomBll;
+using CmCustomDto;
+using SharpKml.Dom;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace CmCustomUi.map
+{
+    public partial class View : System.Web.UI.Page
+    {
+        private const string LAT_PARAM = "lat";
+        private const string LNG_PARAM = "long";
+        private const string RADIUS_PARAM = "raio";
+        private const string RADIUS_CTO_PARAM = "raio_cto";
+        private const string LAT_CUSTOMER_PARAM = "lat_cliente";
+        private const string LNG_CUSTOMER_PARAM = "long_cliente";
+        private const string LAT_NET_PARAM = "lat_rede";
+        private const string LNG_NET_PARAM = "long_rede";
+        private const string STATE_PARAM = "estado";
+        private const string CITY_PARAM = "localidade";
+        private const string DISTRICT_PARAM = "bairro";
+        private const string STREET_PARAM = "logradouro";
+        private const string NUMBER_PARAM = "numero";
+        private const string FILTER_PARAM = "filtro";
+        private const string INVALID_PARAMETERS = "Estes parâmetros são inválidos: {0}";
+        private const string FORMAT_INCORRECT_RADIUS_CTO = "O formato do raio_cto não está correto.";
+        private const string FORMAT_INCORRECT = "O formato do número não está correto. Utilize os parâmetros, por exemplo, da seguinte forma: <br /><ul><li>/view?lat=-18.906300518044&long=-48.2686865991104&raio=150.0 </li></ul>";
+
+        private Regex erFilter = new Regex("^(none|cto|ceo|st|all)$", RegexOptions.IgnoreCase);
+        private Regex erMaxDrop = new Regex(@"[E\d,.+-]+");
+        private Regex erDouble = new Regex(@"^[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?$");
+
+        FacilityBll facilityBll = new FacilityBll();
+
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
+        public string LatOrigin { get; set; }
+        public string LngOrigin { get; set; }
+        public string LatDestiny { get; set; }
+        public string LngDestiny { get; set; }
+        public string RadiusCTO { get; set; }
+        public int Zoom { get; set; }
+        public bool IsOk { get; set; }
+        public bool ExibirRota { get; set; }
+
+
+        public View()
+        {
+            Latitude  = "0.0";
+            Longitude = "0.0";
+            Zoom = 1;
+            ExibirRota = false;
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!this.IsPostBack)
+            {
+                LblErrorMessage.Text = "";
+                try
+                {
+                    var parameters = CheckParameters();
+
+                    if(parameters == null)
+                    {
+                        IsOk = true;
+                        return;
+                    }
+
+                    if(parameters is LatLngParams)
+                    {
+                        BuildPlacemarks(parameters as LatLngParams);
+                    }
+                    else
+                        if (parameters is LatLngNetParams)
+                        {
+                            BuildPath(parameters as LatLngNetParams);
+                        }
+                        else
+                            if (parameters is CityStateParams)
+                            {
+                                BuildPlacemarks(parameters as CityStateParams);
+                            }
+                            else
+                                if (parameters is AddressParams)
+                                {
+                                     BuildPlacemarks(parameters as AddressParams);
+                                }
+
+                        IsOk = true;
+                }
+                catch (Exception ex)
+                {
+                    IsOk = false;
+                    LblErrorMessage.Text = ex.Message;
+                    return;
+                }
+             }
+        }
+
+        private void DrawMarkers(BaseParams baseParams, IEnumerable<Placemark> placemarks)
+        {
+            var lst = new List<Point>();
+            string name = "Ponto Inicial";
+
+            var dicLocality = new Dictionary<string, string>
+            {
+                { "Latitude", this.Latitude },
+                { "Longitude", this.Longitude },
+            };
+
+            lst.Add(new Point
+            {
+                Name = name,
+                Latitude = this.Latitude,
+                Longitude = this.Longitude,
+                Description = BuildDescription(name, dicLocality),
+                TypeElement = null
+            });
+
+            if (baseParams.Filters != null && baseParams.Filters.Count() > 0)
+            {
+                foreach (var placemark in placemarks)
+                {
+                    var coordinate = (placemark.Geometry as SharpKml.Dom.Point).Coordinate;
+                    var description = placemark.Description;
+
+                    var dicData = ExtendedDataToDictionary(placemark.ExtendedData);
+                    double lengthMaxDrop = GetLengthMaxDrop(dicData);
+
+                    lst.Add(new Point
+                    {
+                        Name          = placemark.Name,
+                        Latitude      = coordinate.Latitude.ToString(Utility.GetCultureInfoUS()),
+                        Longitude     = coordinate.Longitude.ToString(Utility.GetCultureInfoUS()),
+                        Description   = BuildDescription(placemark.Name, dicData),
+                        TypeElement   = placemark.Snippet.Text,
+                        LengthMaxDrop = lengthMaxDrop.ToString(Utility.GetCultureInfoUS()),
+                        
+                    });
+                }
+            }
+
+            rptMarkers.DataSource = lst;
+            rptMarkers.DataBind();
+        }
+
+        private double GetLengthMaxDrop(Dictionary<string, string> dic )
+        {
+            string value;
+            CultureInfo cultureInfoBR = new CultureInfo("pt-BR");
+
+            dic.TryGetValue("COMPRIMENTO DROP", out value);
+
+            return Convert.ToDouble(erMaxDrop.Match(value ?? "0").Value, cultureInfoBR);
+        }
+
+        private Dictionary<string, string> ExtendedDataToDictionary(ExtendedData extendedData)
+        {
+            return (extendedData != null) ? extendedData.Data.ToDictionary(v => v.DisplayName, v => v.Value) : null;
+        }
+
+        private string BuildDescription(string placemarkName, Dictionary<string, string> dic)
+        {
+            var sb = new StringBuilder()
+                .Append("<div style=\"width: 300px; overflow: auto; \">")
+                .Append(string.Format("<h3>{0}</h3>", placemarkName));
+
+            if (dic != null && dic.Count() > 0)
+            {
+                sb.Append("<table class=\"table table-bordered table-responsive\"></thead><tbody>");
+                foreach (var item in dic)
+                {
+                    sb.Append("<tr><td>")
+                    .Append(item.Key)
+                    .Append("</td><td>")
+                    .Append(item.Value)
+                    .Append("</td></tr>");
+                }
+                sb.Append("</tr></tbody></table>");
+            }
+            sb.Append("</div>");
+
+            return sb.ToString();
+        }
+
+        private void BuildPlacemarks(LatLngParams latLngParams)
+        {
+            string lat = latLngParams.Latitude.ToString(Utility.GetCultureInfoUS());
+            string lng = latLngParams.Longitude.ToString(Utility.GetCultureInfoUS());
+
+            this.Latitude = lat;
+            this.Longitude = lng;
+            this.Zoom = 16;
+
+            IEnumerable<Placemark> placemarks;
+
+            if (latLngParams.Filters != null && latLngParams.Filters.Count() > 0)
+            {
+                placemarks = facilityBll.GetPlacemarksPoint(latLngParams.Latitude, latLngParams.Longitude, latLngParams.Radius, latLngParams.Filters);
+                DrawMarkers(latLngParams,  placemarks);
+            }
+        }
+
+        private BaseParams CheckParameters()
+        {
+            var foundParameters = Request.QueryString.AllKeys.Where(x => x != null).Select(x => x.ToLower());
+
+            /* Se não existir parâmetros na url mostre o mapa sem elementos*/
+            if (foundParameters.Count() == 0)
+            {
+                return null;
+            }
+
+            var filterParam      = new Pair<string, string>(FILTER_PARAM, Request.QueryString[FILTER_PARAM]);
+            var latParam         = new Pair<string, string>(LAT_PARAM, Request.QueryString[LAT_PARAM]);
+            var lngParam         = new Pair<string, string>(LNG_PARAM, Request.QueryString[LNG_PARAM]);
+            var radiusParam      = new Pair<string, string>(RADIUS_PARAM, Request.QueryString[RADIUS_PARAM]);
+            var radiusCTOParam   = new Pair<string, string>(RADIUS_CTO_PARAM, Request.QueryString[RADIUS_CTO_PARAM]);
+            var latCustomerParam = new Pair<string, string>(LAT_CUSTOMER_PARAM, Request.QueryString[LAT_CUSTOMER_PARAM]);
+            var lngCustomerParam = new Pair<string, string>(LNG_CUSTOMER_PARAM, Request.QueryString[LNG_CUSTOMER_PARAM]);
+            var latNetParam      = new Pair<string, string>(LAT_NET_PARAM, Request.QueryString[LAT_NET_PARAM]);
+            var lngNetParam      = new Pair<string, string>(LNG_NET_PARAM, Request.QueryString[LNG_NET_PARAM]);
+            var stateParam       = new Pair<string, string>(STATE_PARAM, Request.QueryString[STATE_PARAM]);
+            var cityParam        = new Pair<string, string>(CITY_PARAM, Request.QueryString[CITY_PARAM]);
+            var districtParam    = new Pair<string, string>(DISTRICT_PARAM, Request.QueryString[DISTRICT_PARAM]);
+            var streetParam      = new Pair<string, string>(STREET_PARAM, Request.QueryString[STREET_PARAM]);
+            var numberParam      = new Pair<string, string>(NUMBER_PARAM, Request.QueryString[NUMBER_PARAM]);
+
+            var lstFilters = new List<string>();
+            string filters = "";
+
+            filters = string.IsNullOrEmpty(filterParam.Value) ? "cto,ceo,st" : filterParam.Value.Trim();
+
+            RadiusCTO = radiusCTOParam.Value ?? "0.0";
+
+            if(!erDouble.IsMatch(RadiusCTO))
+            {
+                throw new FormatException(FORMAT_INCORRECT_RADIUS_CTO);
+            }
+
+            foreach (var it in Regex.Split(filters, @"\s*,\s*"))
+            {
+                switch (it.ToLower())
+                {
+                    case "cto": lstFilters.Add(Constants.ID_CTO); break;
+                    case "ceo": lstFilters.Add(Constants.ID_CEO); break;
+                    case "st": lstFilters.Add(Constants.ID_ST); break;
+                    case "all":
+                        lstFilters.Add(Constants.ID_ST);
+                        lstFilters.Add(Constants.ID_CEO);
+                        lstFilters.Add(Constants.ID_CTO);
+                        break;
+                    case "none": break;
+                    default: throw new Exception("Valor inválido para filtro. Os valores possíveis são a combinação de: none, cto, ceo, st e all");
+                }
+            }
+
+            var lstParams = new List<Pair<string, string>>
+            {
+                filterParam, latParam, lngParam, radiusParam, latCustomerParam, lngCustomerParam,
+                latNetParam, lngNetParam, stateParam, cityParam, districtParam, streetParam, numberParam, radiusCTOParam
+            };
+
+            var invalidParams = foundParameters.Except(lstParams.Select(x => x.Key.ToLower()));
+
+            /* Se tiver parâmetros na url que não foram previstos é gerado um erro e mostrado na tela */
+            if (invalidParams.Count() > 0)
+            {
+                throw new Exception(string.Format(INVALID_PARAMETERS, string.Join(", ", invalidParams)));
+            }
+
+            var sum = lstParams.Select((item, idx) => Convert.ToInt32(Math.Pow(2, idx)) * (item.Value != null ? 1 : 0)).Sum() | 8192 | 1;
+
+            bool latLngOptions             =  sum == 8207;
+            bool latLngNetCustomersOptions =  sum == 8433;
+            bool CityStateOptions          =  sum == 8961;
+            bool AddressOptions            =  sum == 15113 || sum == 16137;
+
+            if (latLngOptions)
+            {
+                return BuildLatLngParams(latParam, lngParam, radiusParam, lstFilters.Distinct().ToList());
+            }
+            else
+                if (latLngNetCustomersOptions)
+            {
+                return BuildLatLngNetParams(latCustomerParam, lngCustomerParam, latNetParam, lngNetParam, lstFilters.Distinct().ToList());
+            }
+            else
+                if (CityStateOptions)
+                {
+                    return BuildCityStateParams(stateParam, cityParam, lstFilters.Distinct().ToList());
+                }
+                else
+                    if (AddressOptions)
+                    {
+                        return BuildAddressParams(stateParam, cityParam, districtParam, streetParam, numberParam, radiusParam, lstFilters.Distinct().ToList());
+                    }
+                    else
+                        {
+                            string msgError = new StringBuilder("Parâmetros faltando ou informados incorretamente.<br /><br />")
+                                .Append("Veja alguns exemplos de chamada:<br />")
+                                .Append("<div style=\"font-size:70%\"><ul>")
+                                .Append("<li>http://cm.algartelecom.com.br/mapa/view</li>")
+                                .Append("<li>http://cm.algartelecom.com.br/mapa/view?lat=-18.906300518044&long=-48.2686865991104&raio=150.0&filtro=cto,ceo,st</li>")
+                                .Append("<li>http://cm.algartelecom.com.br/mapa/view?lat_cliente=-18.90630051804&long_cliente=-48.2686865991104&lat_rede=-18.9104572070146&long_rede=-48.2720228619498</li>")
+                                .Append("<li>http://cm.algartelecom.com.br/mapa/view?estado=MG&localidade=UBERLANDIA</li>")
+                                .Append("<li>http://cm.algartelecom.com.br/mapa/view?estado=MG&localidade=UBERLANDIA&bairro=CENTRO</li>")
+                                .Append("<li>http://cm.algartelecom.com.br/mapa/view?estado=MG&localidade=UBERLANDIA&bairro=CENTRO&logradouro=AV+AFONSO+PENA</li>")
+                                .Append("<li>http://cm.algartelecom.com.br/mapa/view?estado=MG&localidade=UBERLANDIA&bairro=CENTRO&logradouro=AV+AFONSO+PENA&numero=20</li>")
+                                .Append("</ul></div>")
+                                .ToString();
+
+                            throw new Exception(msgError);
+                        }
+        }
+
+        private void BuildPath(LatLngNetParams latLngNetParams)
+        {
+            LatOrigin  = latLngNetParams.LatCustomer.ToString(Utility.GetCultureInfoUS());
+            LngOrigin  = latLngNetParams.LngCustomer.ToString(Utility.GetCultureInfoUS());
+            LatDestiny = latLngNetParams.LatNet.ToString(Utility.GetCultureInfoUS());
+            LngDestiny = latLngNetParams.LngNet.ToString(Utility.GetCultureInfoUS());
+            Latitude   = LatOrigin;
+            Longitude  = LngOrigin;
+
+            ExibirRota = true;
+
+            IEnumerable<Placemark> placemarks;
+
+            if (latLngNetParams.Filters != null && latLngNetParams.Filters.Count() >0)
+            {
+                double radius = 800;
+                
+                placemarks = facilityBll.GetPlacemarksPoint(latLngNetParams.LatCustomer, latLngNetParams.LngCustomer, radius, latLngNetParams.Filters);
+                DrawMarkers(latLngNetParams, placemarks);
+            }
+        }
+
+        private void BuildPlacemarks(CityStateParams cityStateParams)
+        {
+            double latitude;
+            double longitude;
+            double minLat = 90.0;
+            double minLng = 90.0;
+            double maxLat = -90.0;
+            double maxLng = -90.0;
+
+            List<Placemark> placemarks = (cityStateParams.Filters != null && cityStateParams.Filters.Count() > 0) ? facilityBll.GetPlacemarksPoint(cityStateParams.City, cityStateParams.State, cityStateParams.Filters).ToList() : new List<Placemark>();
+
+            foreach (Placemark placemark in placemarks)
+            {
+                if (!(placemark.Geometry is SharpKml.Dom.Point))
+                {
+                    continue;
+                }
+                minLat = (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Latitude < minLat ? (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Latitude : minLat;
+                minLng = (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Longitude < minLng ? (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Longitude : minLng;
+                maxLat = (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Latitude > maxLat ? (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Latitude : maxLat;
+                maxLng = (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Longitude > maxLng ? (placemark.Geometry as SharpKml.Dom.Point).Coordinate.Longitude : maxLng;
+            }
+
+            latitude = (maxLat + minLat) / 2;
+            longitude = (maxLng + minLng) / 2;
+
+            string lat = latitude.ToString(Utility.GetCultureInfoUS());
+            string lng = longitude.ToString(Utility.GetCultureInfoUS());
+
+            this.Latitude = lat;
+            this.Longitude = lng;
+            this.Zoom = 13;
+
+            DrawMarkers(cityStateParams, placemarks);
+
+        }
+
+        private void BuildPlacemarks(AddressParams addressParams)
+        {
+            CoordenadasLatLong latlong;
+
+            latlong = Utility.GetCoordenadasFromEndereco(addressParams.Street, addressParams.Number, addressParams.District, addressParams.City, addressParams.State);
+
+            string lat = latlong.getLatitude();
+            string lng = latlong.getLongitude();
+
+            double latitude = double.Parse(lat, Utility.GetCultureInfoUS());
+            double longitude = double.Parse(lng, Utility.GetCultureInfoUS());
+
+            this.Latitude = lat;
+            this.Longitude = lng;
+            this.Zoom = 16;
+
+            IEnumerable<Placemark> placemarks;
+
+            if (addressParams.Filters != null && addressParams.Filters.Count() > 0)
+            {
+                placemarks = facilityBll.GetPlacemarksPoint(latitude, longitude, addressParams.Radius, addressParams.Filters);
+                DrawMarkers(addressParams, placemarks);
+            }
+        }
+
+        
+        /// <summary>
+        /// Gera um objeto que tem latitude, longitude e raio. 
+        /// </summary>
+        /// <param name="latParam">Latitude</param> 
+        /// <param name="lngParam">Longitude</param>
+        /// <param name="radiusParam">Raio</param>
+        /// <returns>Retorna objeto que tem latitude, longitude e raio.</returns>
+        private BaseParams BuildLatLngParams(Pair<string, string> latParam, Pair<string, string> lngParam, Pair<string, string> radiusParam, List<string> filters)
+        {
+            try
+            {
+                return new LatLngParams
+                {
+                    Latitude   = double.Parse(latParam.Value, Utility.GetCultureInfoUS()),
+                    Longitude  = double.Parse(lngParam.Value, Utility.GetCultureInfoUS()),
+                    Radius     = Convert.ToDouble(radiusParam.Value, Utility.GetCultureInfoUS()),
+                    Filters    = filters
+                };
+            }
+            catch (FormatException)
+            {
+                throw new FormatException(FORMAT_INCORRECT);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        private BaseParams BuildLatLngNetParams(Pair<string, string> latCustomerParam, Pair<string, string> lngCustomerParam,
+                                                Pair<string, string> latNetParam, Pair<string, string> lngNetParam, List<string> filters)
+        {
+            try
+            {
+                return new LatLngNetParams
+                {
+                    LatCustomer = double.Parse(latCustomerParam.Value, Utility.GetCultureInfoUS()),
+                    LngCustomer = double.Parse(lngCustomerParam.Value, Utility.GetCultureInfoUS()),
+                    LatNet      = double.Parse(latNetParam.Value, Utility.GetCultureInfoUS()),
+                    LngNet      = double.Parse(lngNetParam.Value, Utility.GetCultureInfoUS()),
+                    Filters     = filters
+                };
+            }
+            catch (FormatException)
+            {
+                throw new FormatException(FORMAT_INCORRECT);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        private BaseParams BuildCityStateParams(Pair<string, string> stateParam, Pair<string, string> cityParam, List<string> filters)
+        {
+            try
+            {
+                return new CityStateParams
+                {
+                    State = stateParam.Value.ToUpper().RemoveAccents(),
+                    City = cityParam.Value.ToUpper().RemoveAccents(),
+                    Filters = filters
+                };
+            }
+            catch (FormatException)
+            {
+                throw new FormatException(FORMAT_INCORRECT);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        private BaseParams BuildAddressParams(Pair<string, string> stateParam, Pair<string, string> cityParam, Pair<string, string> districtParam, Pair<string, string> streetParam, Pair<string, string> numberParam, Pair<string, string> radiusParam, List<string> filters)
+        {
+            try
+            {
+                return new AddressParams
+                {
+                    State = stateParam.Value.ToUpper().RemoveAccents(),
+                    City = cityParam.Value.ToUpper().RemoveAccents(),
+                    District = (districtParam.Value ?? "").ToUpper().RemoveAccents(),
+                    Street = streetParam.Value.ToUpper().RemoveAccents(),
+                    Number = numberParam.Value,
+                    Radius = double.Parse(radiusParam.Value, Utility.GetCultureInfoUS()),
+                    Filters = filters
+                };
+            }
+            catch (FormatException)
+            {
+                throw new FormatException(FORMAT_INCORRECT);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+    }
+
+    public class Pair<K, V>
+    {
+        public K Key   { get; set; }
+        public V Value { get; set; }
+
+        public Pair(K key, V value)
+        {
+            this.Key = key;
+            this.Value = value;
+        }
+    }
+
+    public abstract class BaseParams
+    {
+        public List<string> Filters { get; set; }
+    }
+
+    public class LatLngParams : BaseParams
+    {
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double Radius { get; set; }
+    }
+
+    public class LatLngNetParams : BaseParams
+    {
+        public double LatCustomer { get; set; }
+        public double LngCustomer { get; set; }
+        public double LatNet { get; set; }
+        public double LngNet { get; set; }
+    }
+
+    public class CityStateParams : BaseParams
+    {
+        public string State { get; set; }
+        public string City { get; set; }
+    }
+
+    public class AddressParams : BaseParams
+    {
+        public string State { get; set; }
+        public string City { get; set; }
+        public string District { get; set; }
+        public string Street { get; set; }
+        public string Number { get; set; }
+        public double Radius { get; set; }
+    }
+
+    public class Point
+    {
+        public string Name { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
+        public string Description { get; set; }
+        public string TypeElement { get; set; }
+        public string LengthMaxDrop { get; set; }
+    }
+
+  
+}

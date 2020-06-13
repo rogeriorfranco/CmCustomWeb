@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDal
+{
+   public interface ILocalityDal
+    {
+       DataRow getCodLocalidadeCodLogradouro(string localidade, string logradouro);
+       int getLogradouroIdByCodLogradouro(string codLogradouro, string codLocalidade);
+       int getLogradouroIdByLogradouroLocalidade(string Logradouro, string Localidade);
+       DataTable getLogradouroByLocalidade(string localidade);
+       List<string> getBairroByIdLogradouro(int idLogradouro);        
+    }
+}

@@ -1,0 +1,32 @@
+﻿using DDesign.API;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDal
+{
+    public class OperationsCmAPI
+    {
+        static ConnectMasterAPI cmAPI = connectionPool();
+        static ConnectMasterAPI connectionPool()
+        {
+            ConnectMasterAPI mAPI = cmAPI;
+            if (mAPI == null)
+            {
+                mAPI = ConnectionCmDal.getConnectionCm();
+            }
+            return mAPI;
+        }
+
+        //public void atualizaPontoCompoment(int compPointID, string circuito, string status)
+        //{
+        //    OperationsOracleDAL operationsOracleDAL = new OperationsOracleDAL();
+        //    ComponentPoint componentPoint = cmAPI.ComponentPoints.ReadElement(compPointID) as ComponentPoint;
+        //    componentPoint.ObjectState.StateTypeId = operationsOracleDAL.getIdStatusCompomentPoint(status);
+        //    componentPoint.Description = circuito;
+        //    componentPoint.UpdateDetails();
+        //}
+    }
+}

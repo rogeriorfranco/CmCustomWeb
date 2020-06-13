@@ -1,0 +1,195 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="search.aspx.cs" Inherits="CmCustomUi.facility.search" %>
+
+<%@ Register Src="~/userControls/UserControlUpdateProgress.ascx" TagPrefix="uc1" TagName="UserControlUpdateProgress" %>
+
+<asp:Content ID="Content" ContentPlaceHolderID="ContentPlaceHolder" runat="server">
+
+    <asp:UpdatePanel ID="UpTitulo" runat="server">
+        <ContentTemplate>
+            <section class="content-header">
+                <h1>Consulta Facilidades<asp:Label ID="lblTotalTitulo" runat="server"></asp:Label></h1>
+            </section>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+    <section class="content">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class='row'>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Cto</label>
+                            <asp:TextBox ID="txtCto" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Cnl</label>
+                            <asp:TextBox ID="txtCnl" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Cto Antiga</label>
+                            <asp:TextBox ID="txtCtoAntiga" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Estacao</label>
+                            <asp:TextBox ID="txtEstacao" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Olt</label>
+                            <asp:TextBox ID="txtOlt" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Circuito</label>
+                            <asp:TextBox ID="txtCircuito" runat="server" class="form-control input-sm" ClientIDMode="Static"></asp:TextBox>
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <asp:DropDownList ID="ddlStatus" runat="server" class="form-control input-sm" ClientIDMode="Static">
+                                <asp:ListItem Value="0">Selecione</asp:ListItem>
+                                <asp:ListItem>AUDITORIA</asp:ListItem>
+                                <asp:ListItem>DEFEITO</asp:ListItem>
+                                <asp:ListItem>DESIGNADO</asp:ListItem>
+                                <asp:ListItem>OCUPADO</asp:ListItem>
+                                <asp:ListItem>RESERVADO</asp:ListItem>
+                                <asp:ListItem>VAGO</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Serial</label>
+                            <asp:TextBox ID="txtSerial" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Ip Olt</label>
+                            <asp:TextBox ID="txtIpOlt" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Outer Vlan</label>
+                            <asp:TextBox ID="txtOuterVlan" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Inner Vlan</label>
+                            <asp:TextBox ID="txtInnerVlan" ClientIDMode="Static" runat="server" class="form-control input-sm"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-2">
+                        <div class="pull-right" style="padding-top: 15px">
+                            <asp:UpdatePanel ID="upPesquisar" runat="server">
+                                <ContentTemplate>
+                                    <asp:LinkButton ID="lbPesquisar" runat="server" CssClass="btn btn-primary" OnClick="lbPesquisar_Click"><i class="fa fa-search"></i> Pesquisar</asp:LinkButton>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <asp:UpdatePanel ID="upGridView" runat="server">
+                    <ContentTemplate>
+                        <div class="table-responsive">
+                            <asp:GridView ID="gvFacilidade" ClientIDMode="Static" runat="server" CssClass="table table-bordered table-hover"
+                                EmptyDataText="Sem Informações" AutoGenerateColumns="False"
+                                DataKeyNames="POINT_ID,ID_SUB_PORTA,ID_LOGRADOURO,COMPONENT_ID_PORTA_OLT,COMPONENT_ID,ID_OLT,DESIGNATION_ID,TIPO_VLAN_BANDA_LARGA"
+                                OnRowDataBound="gvFacilidade_RowDataBound" OnRowCommand="gvFacilidade_RowCommand">
+                                <Columns>
+                                    <asp:TemplateField ShowHeader="False">
+                                        <ItemTemplate>
+                                            <asp:LinkButton ID="lbEdit" runat="server" CausesValidation="False" CommandName="editar"><i class="fa fa-edit"></i></asp:LinkButton>
+                                        </ItemTemplate>
+                                        <ItemStyle VerticalAlign="Middle" />
+                                    </asp:TemplateField>
+
+                                    <asp:TemplateField ShowHeader="False">
+                                        <ItemTemplate>
+                                            <asp:LinkButton ID="lbRedesignar" Visible="false" runat="server" CausesValidation="False" ToolTip="Redesignar" CommandName="redesignar"><i class="fa fa-exchange"></i></asp:LinkButton>
+                                        </ItemTemplate>
+                                        <ItemStyle VerticalAlign="Middle" />
+                                    </asp:TemplateField>
+
+                                    <asp:BoundField DataField="TEXT" HeaderText="Cto">
+                                        <ItemStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:TemplateField HeaderText="Status">
+                                        <ItemTemplate>
+                                            <asp:Label ID="lblStatus" runat="server" Text='<%# Bind("STATUS") %>'></asp:Label>
+                                        </ItemTemplate>
+                                        <ItemStyle HorizontalAlign="Center" />
+                                    </asp:TemplateField>
+                                    <asp:BoundField DataField="CIRCUITO" HeaderText="Circuito" />
+                                    <asp:BoundField DataField="POINT_ORDER" HeaderText="Porta Cto">
+                                        <HeaderStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="ESTACAO" HeaderText="Estação">
+                                        <ItemStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="LOCALIDADE" HeaderText="Localidade">
+                                        <ItemStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="CNL" HeaderText="Cnl" />
+                                    <asp:BoundField HeaderText="Shelf" />
+                                    <asp:BoundField HeaderText="slot" />
+                                    <asp:BoundField HeaderText="Porta" />
+                                    <asp:BoundField DataField="FABRICANTE" HeaderText="Tecnologia" />
+                                    <asp:BoundField DataField="OLT" HeaderText="Olt">
+                                        <ItemStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="IP_DADOS_OLT" HeaderText="IP" />
+                                    <asp:BoundField DataField="MODELO" HeaderText="Modelo">
+                                        <ItemStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="VLAN_BANDA_LARGA" HeaderText="Vlan" />
+                                    <asp:BoundField DataField="VLAN_VOZ_VOBB" HeaderText="Vobb" />
+                                    <asp:BoundField DataField="PRODUTO" HeaderText="Produto">
+                                        <ItemStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="CLIENTE" HeaderText="Cliente">
+                                        <ItemStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="BANDA_MB" HeaderText="Banda" />
+                                    <asp:BoundField DataField="ONT_ID" HeaderText="Ont Id">
+                                        <HeaderStyle Wrap="False" />
+                                    </asp:BoundField>
+                                    <asp:BoundField DataField="SERIAL" HeaderText="Serial" />
+                                    <asp:BoundField DataField="OUTER_VLAN" HeaderText="Outer" />
+                                    <asp:BoundField DataField="INNER_VLAN" HeaderText="Inner" />
+                                </Columns>
+                                <EmptyDataRowStyle ForeColor="Red" />
+                                <HeaderStyle CssClass="thead" />
+                                <PagerStyle CssClass="pagination-ys" />
+                            </asp:GridView>
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
+        </div>
+    </section>
+
+    <uc1:UserControlUpdateProgress runat="server" ID="UserControlUpdateProgress" />
+</asp:Content>
+

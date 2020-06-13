@@ -1,0 +1,64 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDto
+{
+    public class Olt
+    {
+        public int idSubPorta { get; set; }
+        public int idComponent { get; set; }
+        public string status { get; set; }
+        public string circuito { get; set; }
+        public string cliente { get; set; }
+
+
+        private string Banda_mb;
+        public string banda_mb
+        {
+            get { return (string.IsNullOrEmpty(Banda_mb.ToString().Trim()) ? Banda_mb : "0"); }
+            set { Banda_mb = value; }
+        }
+        private string Banda_uplink;
+        public string banda_uplink
+        {
+            get { return (string.IsNullOrEmpty(Banda_uplink.ToString().Trim()) ? Banda_uplink : "0"); }
+            set { Banda_uplink = value; }
+        }
+
+        private string Nro_lote;
+        public string nro_lote
+        {
+            get { return (string.IsNullOrEmpty(Nro_lote.ToString().Trim()) ? Nro_lote : "0"); }
+            set { Nro_lote = value; }
+        }
+
+        private string Logradouro;
+        public string logradouro
+        {
+            get { return (string.IsNullOrEmpty(Logradouro.ToString().Trim()) ? Logradouro : "0"); }
+            set { Logradouro = value; }
+        }
+
+        public string serial { get; set; }
+        public string produto { get; set; }
+        public string bairro { get; set; }        
+        public string compl_nivel_1 { get; set; }
+        public string compl_nivel_1_descricao { get; set; }
+        public string compl_nivel_2 { get; set; }
+        public string compl_nivel_2_descricao { get; set; }
+        public string compl_nivel_3 { get; set; }
+        public string compl_nivel_3_descricao { get; set; }
+        public string validade_reserva { get; set; }        
+        public string modelo { get; set; }
+        public string ipOlt { get; set; }
+        public string nome { get; set; }
+        public string shelf { get; set; }
+        public string slot { get; set; }
+        public string porta { get; set; }
+        public string tecnologia { get; set; }
+    }
+}
+

@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CmCustomDal;
+using System.Data;
+
+namespace CmCustomBll
+{
+    public class FacilityBll
+    {
+        IFacilityDal facilityDal = new FacilityDal();
+
+        public DataTable consultaFacilidades(string circuito, string produto, string status, string cnl, string serial, string cto,
+            string olt, string ipOlt, string vlanCompartilhada, string outerVlan, string innerVlan)
+        {
+            return facilityDal.consultaFacilidades(circuito, produto, status, cnl, serial, cto, olt, ipOlt, vlanCompartilhada, outerVlan, innerVlan);
+        }
+
+        public DataRow getFacilityCTOByIdPonto(int idPonto)
+        {
+            return facilityDal.getFacilityCTOByIdPonto(idPonto);
+        }
+
+        public DataRow getFacilityOLTByIdSubPorta(int idSubporta, int idCartao)
+        {
+            return facilityDal.getFacilityOLTByIdSubPorta(idSubporta, idCartao);
+        }
+
+    }
+}

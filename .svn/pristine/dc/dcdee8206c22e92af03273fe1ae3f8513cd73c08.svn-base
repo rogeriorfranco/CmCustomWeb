@@ -1,0 +1,149 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="CmCustomUi.Site" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <title>Cm Web</title>
+    <link rel="shortcut icon" href="Images/favicon.ico">
+
+    <link href="<%=Page.ResolveClientUrl("~/content/bootstrap.min.css") %>" rel="stylesheet">
+    <link href="<%=Page.ResolveClientUrl("~/content/font-awesome.min.css") %>" rel="stylesheet">
+    <link href="<%=Page.ResolveClientUrl("~/content/all-skins.min.css") %>" rel="stylesheet">
+    <link href="<%=Page.ResolveClientUrl("~/content/adminLTE.min.css") %>" rel="stylesheet">
+    <script src="<%=Page.ResolveClientUrl("~/scripts/jQuery-2.1.3.min.js")%>" type="text/javascript"></script>
+    <script src="<%=Page.ResolveClientUrl("~/scripts/bootstrap.min.js")%>" type="text/javascript"></script>
+    <script src="<%=Page.ResolveClientUrl("~/scripts/app.min.js")%>" type="text/javascript"></script>
+    <script src="<%=Page.ResolveClientUrl("~/scripts/menu.js")%>" type="text/javascript"></script>
+
+</head>
+<body class="skin-black">
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManagerMaster" runat="server" EnableScriptGlobalization="true" EnableScriptLocalization="true">
+        </asp:ScriptManager>
+        <div class="wrapper">
+
+            <header class="main-header">
+                <a class="logo">
+                    <asp:ImageButton ID="imbHome" CausesValidation="false" runat="server" ImageUrl="Images/algar-telecom-logo.png" OnClick="imbHome_Click" />
+                </a>
+                
+                <nav class="navbar navbar-static-top" role="navigation">
+                    
+                    <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                        <span class="sr-only">Toggle navigation</span>
+                    </a>
+                    <div class="navbar-custom-menu">
+                        <ul class="nav navbar-nav">
+
+                            <li class="dropdown notifications-menu">
+                                <a>
+                                    <i class="fa fa-bell-o"></i>
+                                    <span class="label label-warning">
+                                        <asp:Label ID="lblTotCatePorDia" ToolTip="Total de Categorizações Por Dia" runat="server"></asp:Label>
+                                    </span>
+                                </a>
+                            </li>
+                            
+                            <li class="dropdown user user-menu">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <span class="hidden-xs">
+                                        <small>
+                                            <asp:Label ID="lblBemVindo" runat="server"></asp:Label></small>
+                                        <asp:Label ID="lblUserLogin" ClientIDMode="Static" runat="server" Font-Bold="True"></asp:Label></span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li class="user-header">
+                                        <p>
+                                            <small>
+                                                <asp:Label ID="lblAcesso" runat="server"></asp:Label></small>
+                                            <small>Perfil:
+                                                <asp:Label ID="lblPerfil" runat="server"></asp:Label></small>
+                                            <small>E-mail:
+                                                <asp:Label ID="lblEmail" runat="server"></asp:Label></small>
+                                            <small>CPF:
+                                                <asp:Label ID="lblCPF" runat="server"></asp:Label></small>
+                                            <small>CR:
+                                                <asp:Label ID="lblCR" runat="server"></asp:Label></small>
+                                        </p>
+                                    </li>                                    
+                                    <li class="user-footer">
+                                        <div class="pull-right">
+                                            <asp:LinkButton ID="lbSair" runat="server" CausesValidation="false" CssClass="btn btn-primary" OnClick="lbSair_Click">
+                                                <i class="fa fa-sign-out"></i> Sair</asp:LinkButton>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </header>
+            
+            <aside class="main-sidebar">
+                <section class="sidebar">                    
+                    <ul class="sidebar-menu">
+                        <li id="MenuAdmistracao" class="treeview">
+                            <a>
+                                <i class="fa fa-users"></i>
+                                <span>Admistração</span>
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li id="facilitySearcha-li"><a href="../facility/search"><i class="fa fa-circle-o"></i>Alterações usuário</a></li>
+                                <li id="facilitySearcha1-li"><a href="../facility/search"><i class="fa fa-circle-o"></i>Configurações</a></li>
+                            </ul>
+                        </li>
+
+                        <li id="MenuFacilidade" class="treeview">
+                            <a>
+                                <i class="fa fa-gears"></i>
+                                <span>Facilidades GPON</span>
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li id="facilitySearch-li"><a href="../facility/search"><i class="fa fa-circle-o"></i>Consulta</a></li>
+                                <li id="facilitySearchx-li"><a href="../facility/search"><i class="fa fa-circle-o"></i>Redesignação</a></li>
+                            </ul>
+                        </li>
+
+                        <li id="MenuViabilidade" class="treeview">
+                            <a>
+                                <i class="fa fa-map-marker"></i>
+                                <span>Viabilidade</span>
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li id="viabilitySearch-li"><a href="../viability/search"><i class="fa fa-circle-o"></i>Consulta</a></li>
+                            </ul>
+                        </li>
+
+                        <li id="MenuRelatorio" class="treeview">
+                            <a>
+                                <i class="fa fa-files-o"></i>
+                                <span>Relatórios</span>
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li id="reportsolBand-li"><a href="../reports/oltBand"><i class="fa fa-circle-o"></i>Banda por OLT</a></li>
+                                <li id="4-li"><a href="../facility/search"><i class="fa fa-circle-o"></i>Visualização espacial</a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </section>
+            </aside>
+
+            <div class="content-wrapper">
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder" runat="server">
+                </asp:ContentPlaceHolder>
+            </div>
+
+
+            <footer class="main-footer">               
+            </footer>
+        </div>
+
+    </form>
+</body>
+</html>

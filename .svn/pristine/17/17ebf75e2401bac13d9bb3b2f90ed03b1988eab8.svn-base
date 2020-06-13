@@ -1,0 +1,116 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Runtime.Serialization.Json;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomDto;
+using CmCustomBll;
+using System.Data;
+using System.Net.Sockets;
+namespace CmCustomUi.viability
+{
+    public partial class search : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            Page.Form.DefaultButton = lbPesquisar.UniqueID;            
+        }
+
+        private void getViability()
+        {
+            try
+            {
+                ddlBairro.Items.Add(Request.Form["ctl00$ContentPlaceHolder$ddlBairro"]);
+                LocalityBll localityBll = new LocalityBll();
+                IPAddress[] addresses = Dns.GetHostAddresses(Dns.GetHostName()).Where(a => a.AddressFamily == AddressFamily.InterNetwork).ToArray();
+                WebClient proxy = new WebClient();
+                
+                //string serviceURL = string.Format("http://" + addresses[1] + ":8080/CmCustomAPI/Aprovisionamento/VIABILIDADE/NULL/NULL/NULL/NULL/NULL/" + localityBll.getCodLocalidadeByIdLocalidade(Convert.ToInt32(hfLocalidade.Value)) + "/NULL/OCUPADO/FALSO/NULL/N/NULL/" + localityBll.getCodLogradouroByIdLogradouro(Convert.ToInt32(hfLogradouro.Value)) + "/" + (Request.Form["ctl00$ContentPlaceHolder$ddlBairro"] == null ? "NULL" : Request.Form["ctl00$ContentPlaceHolder$ddlBairro"]) + "/" + txtNumero.Text + "/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL");
+                ///string serviceURL = string.Format("http://" + addresses[1] + ":8080/CmCustomAPI/Aprovisionamento/VIABILIDADE/NULL/NULL/NULL/NULL/NULL/" + localityBll.getCodLocalidadeByIdLocalidade(Convert.ToInt32(hfLocalidade.Value)) + "/NULL/OCUPADO/FALSO/NULL/N/NULL/" + localityBll.getCodLogradouroByIdLogradouro(Convert.ToInt32(hfLogradouro.Value)) + "/" + (Request.Form["ctl00$ContentPlaceHolder$ddlBairro"] == null ? "NULL" : Request.Form["ctl00$ContentPlaceHolder$ddlBairro"]) + "/" + txtNumero.Text + "/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL");
+
+                 string serviceURL = string.Format("http://" + addresses[1] + ":8080/CmCustomAPI/Aprovisionamento/VIABILIDADE/NULL/NULL/NULL/NULL/NULL/NULL/NULL/OCUPADO/FALSO/NULL/N/NULL/NULL/" + (Request.Form["ctl00$ContentPlaceHolder$ddlBairro"] == null ? "NULL" : Request.Form["ctl00$ContentPlaceHolder$ddlBairro"]) + "/" + txtNumero.Text + "/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/" + txtLogradouro.Text + "/" + txtLocalidade.Text + "/" + ddlEstado.SelectedValue);
+                //string serviceURL = string.Format("http://10.51.47.141:8080/CmCustomAPI/Aprovisionamento/VIABILIDADE/NULL/NULL/NULL/NULL/NULL/NULL/NULL/OCUPADO/FALSO/NULL/N/NULL/NULL/" + (Request.Form["ctl00$ContentPlaceHolder$ddlBairro"] == null ? "NULL" : Request.Form["ctl00$ContentPlaceHolder$ddlBairro"]) + "/" + txtNumero.Text + "/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL/" + txtLogradouro.Text + "/" + txtLocalidade.Text + "/" + ddlEstado.SelectedValue);
+                byte[] data = proxy.DownloadData(serviceURL);
+                Stream stream = new MemoryStream(data);
+                DataContractJsonSerializer obj = new DataContractJsonSerializer(typeof(Elements));
+                Elements elements = obj.ReadObject(stream) as Elements;
+                txtCto.Text = elements.cto;
+                txtEstacao.Text = elements.estacao;
+                txtLocal.Text = elements.localidade;
+                txtCnl.Text = elements.cnl;
+                txtPortaCto.Text = elements.porta_cto;
+                txtStatus.Text = elements.status;
+                txtInnerVlan.Text = elements.vlan_inner;
+                txtVlan.Text = elements.vlan;
+                txtOlt.Text = elements.olt;
+                txtIpOlt.Text = elements.ip_olt;
+                txtVlanVobb.Text = elements.vlan_vobb;
+                txtModeloOlt.Text = elements.modelo;
+                txtShelf.Text = elements.shelf;
+                txtSlot.Text = elements.slot;
+                txtPortaFisica.Text = elements.porta;
+                txtPortaLogica.Text = elements.porta_logica;
+                txtVelocidades.Text = elements.velocidades;
+
+                
+
+                if (elements.status_viabilidade == "MANUAL")
+                    divMsg.Attributes.Add("class", "alert alert-warning alert-dismissible");
+
+                if (elements.status_viabilidade == "VIAVEL")
+                {
+                    divMsg.Attributes.Add("class", "alert alert-success alert-dismissible");
+                    lbDesignar.Visible = true;
+                    Session["CTO_NOME_SEARCH"] = elements.cto;
+                    Session["STATUS_SEARCH"] = elements.status;
+                }
+                else
+                {
+                    lbDesignar.Visible = false;
+                    Session["CTO_NOME_SEARCH"] = null;
+                    Session["STATUS_SEARCH"] = null;
+                }
+                    
+
+                if (elements.status_viabilidade == "INVIAVEL")
+                    divMsg.Attributes.Add("class", "alert alert-danger alert-dismissible");
+
+                if (elements.status_viabilidade != null)
+                {
+                    divMsg.Visible = true;
+                    lblMsg.Text = elements.status_viabilidade + " - " + elements.desc_retorno;
+                }
+                else
+                {
+                    divMsg.Visible = false;
+                    lblMsg.Text = string.Empty;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                divMsg.Attributes.Add("class", "alert alert-danger alert-dismissible");
+                divMsg.Visible = true;
+                lblMsg.Text = string.Concat(ex.Message, " - ", ex.InnerException);
+            }
+        }
+
+
+        protected void lbPesquisar_Click(object sender, EventArgs e)
+        {
+            getViability();
+        }
+
+        protected void lbDesignar_Click(object sender, EventArgs e)
+        {            
+            Response.Redirect("../facility/search", false);
+        }
+
+
+    }
+}

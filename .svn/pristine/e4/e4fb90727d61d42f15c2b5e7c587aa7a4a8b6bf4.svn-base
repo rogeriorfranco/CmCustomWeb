@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit http://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <_PublishTargetUrl>C:\Projetos\Publicado\CmCustomWeb</_PublishTargetUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <File Include="bin/CmCustomBll.dll">
+      <publishTime>04/06/2017 11:52:50</publishTime>
+    </File>
+    <File Include="bin/CmCustomDal.dll">
+      <publishTime>04/06/2017 11:52:49</publishTime>
+    </File>
+    <File Include="bin/CmCustomDto.dll">
+      <publishTime>04/06/2017 11:52:48</publishTime>
+    </File>
+    <File Include="bin/CmCustomUi.dll">
+      <publishTime>04/07/2017 09:49:55</publishTime>
+    </File>
+    <File Include="bin/CmCustomUi.dll.config">
+      <publishTime>03/25/2017 01:25:06</publishTime>
+    </File>
+    <File Include="bin/DDesign.API.dll">
+      <publishTime>03/23/2017 16:59:38</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.FriendlyUrls.dll">
+      <publishTime>03/02/2017 21:46:06</publishTime>
+    </File>
+    <File Include="bin/Novell.Directory.Ldap.dll">
+      <publishTime>11/06/2015 17:57:14</publishTime>
+    </File>
+    <File Include="bin/Oracle.DataAccess.dll">
+      <publishTime>02/24/2017 10:12:27</publishTime>
+    </File>
+    <File Include="Content/AdminLTE.min.css">
+      <publishTime>03/31/2017 10:40:15</publishTime>
+    </File>
+    <File Include="Content/all-skins.min.css">
+      <publishTime>11/06/2015 17:57:16</publishTime>
+    </File>
+    <File Include="Content/bootstrap.min.css">
+      <publishTime>02/04/2017 11:35:42</publishTime>
+    </File>
+    <File Include="Content/font-awesome.min.css">
+      <publishTime>03/24/2017 13:41:48</publishTime>
+    </File>
+    <File Include="Content/fonts/fontawesome-webfont.eot">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/fontawesome-webfont.svg">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/fontawesome-webfont.ttf">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/fontawesome-webfont.woff">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/fontawesome-webfont.woff2">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/FontAwesome.otf">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/glyphicons-halflings-regular.eot">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/glyphicons-halflings-regular.svg">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/glyphicons-halflings-regular.ttf">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/glyphicons-halflings-regular.woff">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/ODelI1aHBYDBqgeIAH2zlNV_2ngZ8dMf8fLgjYEouxg.woff">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/toadOcfmlt9b38dHJxOBGEo0As1BFRXtCDhS66znb_k.woff">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/fonts/toadOcfmlt9b38dHJxOBGOode0-EuMkY--TSyExeINg.woff">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Content/googleapis.css">
+      <publishTime>03/25/2017 00:59:21</publishTime>
+    </File>
+    <File Include="datatables/dataTables.bootstrap.css">
+      <publishTime>03/17/2015 08:36:50</publishTime>
+    </File>
+    <File Include="datatables/dataTables.bootstrap.js">
+      <publishTime>03/17/2015 08:36:50</publishTime>
+    </File>
+    <File Include="datatables/images/sort_asc.png">
+      <publishTime>03/17/2015 08:36:50</publishTime>
+    </File>
+    <File Include="datatables/images/sort_asc_disabled.png">
+      <publishTime>03/17/2015 08:36:50</publishTime>
+    </File>
+    <File Include="datatables/images/sort_both.png">
+      <publishTime>03/17/2015 08:36:50</publishTime>
+    </File>
+    <File Include="datatables/images/sort_desc.png">
+      <publishTime>03/17/2015 08:36:50</publishTime>
+    </File>
+    <File Include="datatables/images/sort_desc_disabled.png">
+      <publishTime>03/17/2015 08:36:50</publishTime>
+    </File>
+    <File Include="datatables/jquery.dataTables.js">
+      <publishTime>03/25/2017 11:17:23</publishTime>
+    </File>
+    <File Include="Facilidade/ConsultaFacilidade.aspx">
+      <publishTime>03/25/2017 01:09:54</publishTime>
+    </File>
+    <File Include="facility/change.aspx">
+      <publishTime>04/07/2017 09:46:40</publishTime>
+    </File>
+    <File Include="facility/search.aspx">
+      <publishTime>04/03/2017 15:17:42</publishTime>
+    </File>
+    <File Include="Global.asax">
+      <publishTime>03/02/2017 21:46:53</publishTime>
+    </File>
+    <File Include="Home.aspx">
+      <publishTime>03/02/2017 22:08:50</publishTime>
+    </File>
+    <File Include="Images/algar-telecom-logo.png">
+      <publishTime>11/06/2015 17:57:16</publishTime>
+    </File>
+    <File Include="Images/edit.png">
+      <publishTime>03/30/2017 12:08:14</publishTime>
+    </File>
+    <File Include="Images/favicon.ico">
+      <publishTime>11/06/2015 17:57:16</publishTime>
+    </File>
+    <File Include="Images/loading.gif">
+      <publishTime>11/06/2015 17:57:16</publishTime>
+    </File>
+    <File Include="Login.aspx">
+      <publishTime>04/07/2017 09:40:45</publishTime>
+    </File>
+    <File Include="reports/oltBand.aspx">
+      <publishTime>03/27/2017 10:03:36</publishTime>
+    </File>
+    <File Include="Scripts/app.min.js">
+      <publishTime>11/06/2015 17:57:16</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.min.js">
+      <publishTime>11/06/2015 17:57:18</publishTime>
+    </File>
+    <File Include="Scripts/jQuery-2.1.3.min.js">
+      <publishTime>11/06/2015 17:57:14</publishTime>
+    </File>
+    <File Include="Scripts/jquery.tablesorter.min.js">
+      <publishTime>02/04/2017 13:09:47</publishTime>
+    </File>
+    <File Include="Scripts/menu.js">
+      <publishTime>03/27/2017 00:02:42</publishTime>
+    </File>
+    <File Include="Scripts/viability.js">
+      <publishTime>03/25/2017 14:34:02</publishTime>
+    </File>
+    <File Include="Site.Master">
+      <publishTime>04/05/2017 22:16:45</publishTime>
+    </File>
+    <File Include="UserControls/UserControlAlertBootstrap.ascx">
+      <publishTime>04/05/2017 21:57:27</publishTime>
+    </File>
+    <File Include="UserControls/UserControlUpdateProgress.ascx">
+      <publishTime>04/03/2017 14:58:44</publishTime>
+    </File>
+    <File Include="viability/search.aspx">
+      <publishTime>04/03/2017 14:58:19</publishTime>
+    </File>
+    <File Include="Web.config">
+      <publishTime>04/06/2017 11:52:53</publishTime>
+    </File>
+    <File Include="WebForm1.aspx">
+      <publishTime>03/26/2017 18:20:44</publishTime>
+    </File>
+  </ItemGroup>
+</Project>

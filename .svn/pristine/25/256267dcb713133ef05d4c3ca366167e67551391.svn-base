@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<configuration>
+  <!--<add key="userID" value="ConnectMasterWEB"/>
+  <add key="password" value="C0nn3ctM@st3rW3B"/>-->
+  <appSettings>
+    <add key="userID" value="cmsys"/>
+    <add key="password" value="cmsys"/>
+    <add key="dataSource" value="cmhom"/>
+    <add key="tnsName" value="Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.51.47.177)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=CMHOM)));"/>
+  </appSettings>
+    
+  <system.web>
+    <customErrors mode="Off"/>
+    <compilation debug="false" targetFramework="4.5"/>
+    <httpRuntime targetFramework="4.5"/>
+  </system.web>
+
+  <system.webServer>
+    <defaultDocument>
+      <files>
+        <add value="Login.aspx"/>
+      </files>
+    </defaultDocument>
+  </system.webServer>
+
+	<runtime>
+		<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+			<dependentAssembly>
+				<assemblyIdentity name="Oracle.DataAccess" publicKeyToken="89B483F429C47342" culture="neutral"/>
+				<bindingRedirect oldVersion="0.0.0.0-4.121.1.0" newVersion="4.121.1.0"/>
+			</dependentAssembly>
+		</assemblyBinding>
+	</runtime>
+</configuration>

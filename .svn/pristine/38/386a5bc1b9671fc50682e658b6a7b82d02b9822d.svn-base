@@ -1,0 +1,263 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDal
+{
+    public class ReportDal : IReportDal
+    {
+        StringBuilder sql = new StringBuilder();
+
+        public DataTable relatorioBandaOltTotal(string olt)
+        {
+            try
+            {
+                sql.Append("SELECT * FROM( ");
+                sql.Append("  SELECT ");
+
+                sql.Append("    SUM((SELECT ATT.A_VALUE ");
+                sql.Append("    FROM ARD_ATTR_RED ATT ");
+                sql.Append("    WHERE ATT.AT_NAME = 'BANDA_MB' ");
+                sql.Append("    AND ATT.LINK_ID = SUB.CAP_ID)) AS BANDA_MB ");
+
+                sql.Append("    ,SUM((SELECT ATT.A_VALUE ");
+                sql.Append("    FROM ARD_ATTR_RED ATT ");
+                sql.Append("    WHERE ATT.AT_NAME = 'BANDA_UPLINK' ");
+                sql.Append("    AND ATT.LINK_ID = SUB.CAP_ID)) AS BANDA_UPLINK ");
+
+                sql.Append("    ,(SELECT C.COMPONENT_NAME ");
+                sql.Append("    FROM COMPONENT C ");
+                sql.Append("    WHERE C.COMPONENT_ID = SUB.CONT_ID) AS OLT ");
+
+                sql.Append("    FROM( ");
+
+                sql.Append("    SELECT CAP.CAP_ID, ELM.CONT_ID ");
+                sql.Append("    FROM CCAP_CARD_CAP CAP ");
+                sql.Append("    ,COEL_CONT_ELEM ELM ");
+                sql.Append("    WHERE ELM.ELEM_ID = CAP.COMPONENT_ID ");
+                sql.Append("    AND CAP.COMPONENT_ID IN ");
+                sql.Append("    (SELECT EL.ELEM_ID ");
+                sql.Append("    FROM COEL_CONT_ELEM EL ");
+                sql.Append("    WHERE EL.CONT_ID IN ");
+
+                sql.Append("      (SELECT CO.COMPONENT_ID FROM COMPONENT CO ");
+                sql.Append("       WHERE CO.CATEGORY_ID = 6 ");
+                sql.Append("       AND CO.SUBCATEGORYID = 213)) ");
+
+                sql.Append("    )SUB ");
+
+                sql.Append("   GROUP BY SUB.CONT_ID ");
+                sql.Append(")SSUB ");
+
+                if (olt != "")
+                    sql.Append("WHERE SSUB.OLT LIKE '%" + olt.ToUpper() + "%' ");
+
+                return ConnectionOracleDal.ExecutaSqlRetorno(sql.ToString()).Tables[0];
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+
+        public DataTable relatorioGeralFacilidade(string circuito, string cto, string olt)
+        {
+            try
+            {
+                sql.Append("SELECT LOCALIDADE,ESTACAO,CTO,PORTA_CTO,STATUS,CIRCUITO,PRODUTO ");
+                sql.Append(",CLIENTE,BANDA_MB,IP_OLT,OLT,SERIAL,MODELO ");
+                sql.Append(",REGEXP_SUBSTR(SLOTNAME, '[^/]+', 1, 1) AS SHELF ");
+                sql.Append(",REGEXP_SUBSTR(SLOTNAME, '[^/]+', 1, 2) AS SLOT ");
+                sql.Append(",REGEXP_SUBSTR(SLOTNAME, '[^/]+', 1, 3) AS PORTA ");
+                sql.Append(",ONT_ID,OUTER_VLAN,INNER_VLAN,VLAN_BANDA_LARGA,FABRICANTE ");
+                sql.Append(" FROM( ");
+                sql.Append("  SELECT C.* ");
+
+                sql.Append("    ,CASE WHEN LENGTH(REGEXP_SUBSTR(REGEXP_SUBSTR(FULLNAMEOLT, '[^>]+', 1, 2), '[^<]+', 1, 1)) = 5 ");
+                sql.Append("    THEN REGEXP_SUBSTR(REGEXP_SUBSTR(FULLNAMEOLT, '[^>]+', 1, 2), '[^<]+', 1, 1) ");
+                sql.Append("    ELSE ");
+                sql.Append("    CONCAT(CONCAT(REGEXP_SUBSTR(REGEXP_SUBSTR(FULLNAMEOLT, '[^>]+', 1, 2), '[^<]+', 1, 1), '/'), ");
+                sql.Append("    REGEXP_SUBSTR(REGEXP_SUBSTR(FULLNAMEOLT, '[^>]+', 1, 3), '[^<]+', 1, 1)) ");
+                sql.Append("    END AS SLOTNAME ");
+
+                sql.Append("   FROM ( ");
+                sql.Append("    SELECT B.* ");
+
+                sql.Append("      ,(SELECT CFL.FULLNAME ");
+                sql.Append("      FROM COMPONENTFULLNAME CFL ");
+                sql.Append("      WHERE CFL.COMPONENTID = COMPONENT_ID_PORTA_OLT) AS FULLNAMEOLT ");
+
+                sql.Append("      ,(SELECT ATT.A_VALUE ");
+                sql.Append("      FROM ARD_ATTR_RED ATT ");
+                sql.Append("      WHERE ATT.AT_NAME = 'FABRICANTE' ");
+                sql.Append("      AND ATT.LINK_ID = ");
+                sql.Append("      (SELECT C.COMPONENT_TYPE_ID ");
+                sql.Append("      FROM COMPONENT C ");
+                sql.Append("      WHERE C.COMPONENT_ID = ID_OLT)) AS FABRICANTE ");
+
+                sql.Append("      ,(SELECT T.COMPONENT_TYPE_NAME ");
+                sql.Append("      FROM COMPONENT_TYPE T ");
+                sql.Append("      ,COMPONENT C ");
+                sql.Append("      WHERE C.COMPONENT_TYPE_ID = T.COMPONENT_TYPE_ID ");
+                sql.Append("      AND C.COMPONENT_ID = ID_OLT) AS MODELO ");
+
+                sql.Append("      ,(SELECT CON.COMPONENT_NAME FROM COMPONENT CON ");
+                sql.Append("      WHERE CON.COMPONENT_ID = ID_OLT) AS OLT ");
+
+                sql.Append("      ,(SELECT ATC.A_VALUE ");
+                sql.Append("      FROM ARD_ATTR_RED ATC ");
+                sql.Append("      WHERE ATC.AT_NAME ='IP_DADOS_OLT' ");
+                sql.Append("      AND ATC.LINK_ID = ID_OLT) AS IP_OLT ");
+
+                sql.Append("      ,(SELECT ATC.A_VALUE ");
+                sql.Append("      FROM ARD_ATTR_RED ATC ");
+                sql.Append("      WHERE ATC.AT_NAME ='VLAN_BANDA_LARGA' ");
+                sql.Append("      AND ATC.LINK_ID = ID_OLT) AS VLAN_BANDA_LARGA ");
+
+                sql.Append("      ,(SELECT ATT.A_VALUE ");
+                sql.Append("      FROM ARD_ATTR_RED ATT ");
+                sql.Append("      WHERE ATT.AT_NAME = 'PRODUTO' ");
+                sql.Append("      AND ATT.LINK_ID = ID_SUB_PORTA) AS PRODUTO ");
+
+                sql.Append("      ,(SELECT ATT.A_VALUE ");
+                sql.Append("      FROM ARD_ATTR_RED ATT ");
+                sql.Append("      WHERE ATT.AT_NAME = 'CLIENTE' ");
+                sql.Append("      AND ATT.LINK_ID = ID_SUB_PORTA) AS CLIENTE ");
+
+                sql.Append("      ,(SELECT ATT.A_VALUE ");
+                sql.Append("      FROM ARD_ATTR_RED ATT ");
+                sql.Append("      WHERE ATT.AT_NAME = 'BANDA_MB' ");
+                sql.Append("      AND ATT.LINK_ID = ID_SUB_PORTA) AS BANDA_MB ");
+
+                sql.Append("      ,(SELECT ATT.A_VALUE ");
+                sql.Append("      FROM ARD_ATTR_RED ATT ");
+                sql.Append("      WHERE ATT.AT_NAME = 'SERIAL_ONT' ");
+                sql.Append("      AND ATT.LINK_ID = ID_SUB_PORTA) AS SERIAL ");
+
+                sql.Append("      ,(SELECT REGEXP_SUBSTR(ATT.A_VALUE, '[^:]+', 1, 1) ");
+                sql.Append("      FROM ARD_ATTR_RED ATT ");
+                sql.Append("      WHERE ATT.AT_NAME = 'VLAN_OUTER:INNER' ");
+                sql.Append("      AND ATT.LINK_ID = ID_SUB_PORTA) AS OUTER_VLAN ");
+
+                sql.Append("      ,(SELECT REGEXP_SUBSTR(ATT.A_VALUE, '[^:]+', 1, 2) ");
+                sql.Append("      FROM ARD_ATTR_RED ATT ");
+                sql.Append("      WHERE ATT.AT_NAME = 'VLAN_OUTER:INNER' ");
+                sql.Append("      AND ATT.LINK_ID = ID_SUB_PORTA) AS INNER_VLAN ");
+
+                sql.Append("    ,(SELECT ATC.A_VALUE ");
+                sql.Append("    FROM ARD_ATTR_RED ATC ");
+                sql.Append("    WHERE ATC.AT_NAME ='ONT_ID' ");
+                sql.Append("    AND ATC.LINK_ID = ID_SUB_PORTA) AS ONT_ID ");
+
+                sql.Append("  FROM ( ");
+
+                sql.Append("    SELECT A.* ");
+
+                sql.Append("    ,CASE WHEN ");
+                sql.Append("      (SELECT CT.SUBCATEGORYID ");
+                sql.Append("      FROM COMPONENT CT WHERE CT.COMPONENT_ID = ");
+                sql.Append("        (SELECT EL.CONT_ID ");
+                sql.Append("        FROM COEL_CONT_ELEM EL ");
+                sql.Append("        WHERE EL.ELEM_ID = COMPONENT_ID_PORTA_OLT)) = 213 ");
+                sql.Append("     THEN ");
+                sql.Append("      (SELECT EL.CONT_ID ");
+                sql.Append("      FROM COEL_CONT_ELEM EL ");
+                sql.Append("      WHERE EL.ELEM_ID = COMPONENT_ID_PORTA_OLT) ");
+                sql.Append("     ELSE ");
+                sql.Append("        (SELECT E.CONT_ID ");
+                sql.Append("      FROM COEL_CONT_ELEM E ");
+                sql.Append("      WHERE E.ELEM_ID = ");
+                sql.Append("        (SELECT ELS.CONT_ID ");
+                sql.Append("        FROM COEL_CONT_ELEM ELS ");
+                sql.Append("        WHERE ELS.ELEM_ID = COMPONENT_ID_PORTA_OLT)) ");
+                sql.Append("    END AS ID_OLT ");
+
+                sql.Append("      FROM( ");
+                sql.Append("        SELECT C.COMPONENT_ID,CP.POINT_ORDER AS PORTA_CTO,ST.NAME AS STATUS,DES.TEXT AS CTO,PDD.DESCRIPTION AS CIRCUITO ");
+
+                sql.Append("       ,(SELECT D.DESCRIPTION FROM DES_DESIGNATION D WHERE D.DESIGNATION_ID = ");
+                sql.Append("        (SELECT D.PARENT_ID ");
+                sql.Append("        FROM DES_DESIGNATION D WHERE D.DESIGNATION_ID = ");
+                sql.Append("       (SELECT D.PARENT_ID FROM DES_DESIGNATION D ");
+                sql.Append("        WHERE D.DESIGNATION_ID = ");
+                sql.Append("        (SELECT D.PARENT_ID FROM DES_DESIGNATION D ");
+                sql.Append("       WHERE D.DESIGNATION_ID = C.DESIGNATION_ID)))) AS LOCALIDADE ");
+
+                sql.Append("        ,(SELECT REGEXP_SUBSTR(DEF.FULLNAME, '[^;]+', 1, 5) ");
+                sql.Append("        FROM DFN_DESIG_FULLNAME DEF ");
+                sql.Append("        WHERE DEF.DESIGNATION_ID = C.DESIGNATION_ID) AS ESTACAO ");
+
+                sql.Append("        ,(SELECT PHE.COMP_ID ");
+                sql.Append("        FROM PHE_PHGR_ENDS PHE ");
+                sql.Append("        WHERE PHE.PHGR_ID = ( ");
+                sql.Append("        SELECT CON.PHGR_ID FROM CONNECTION CON ");
+                sql.Append("        WHERE CON.COMPONENT_ID_A = C.COMPONENT_ID ");
+                sql.Append("        AND CON.POINT_ID_A = CP.POINT_ID) ");
+                sql.Append("        AND PHE.CATEGORY_ID = 7) AS COMPONENT_ID_PORTA_OLT ");
+
+                sql.Append("         ,(CASE PDD.DESCRIPTION ");
+                sql.Append("           WHEN ' ' THEN NULL ");
+                sql.Append("              ELSE ");
+                sql.Append("         (SELECT ATT.LINK_ID ");
+                sql.Append("        FROM ARD_ATTR_RED ATT ");
+                sql.Append("        WHERE ATT.LINK_TYPE = 209 ");
+                sql.Append("        AND ATT.AT_NAME = 'STATUS' ");
+                sql.Append("        AND ATT.A_VALUE = ST.NAME ");
+                sql.Append("        AND ROWNUM = 1 ");
+                sql.Append("        AND ATT.LINK_ID IN ( ");
+                sql.Append("          (SELECT ATT.LINK_ID ");
+                sql.Append("          FROM ARD_ATTR_RED ATT ");
+                sql.Append("          WHERE ATT.LINK_TYPE = 209 ");
+                sql.Append("          AND ATT.AT_NAME = 'CIRCUITO' ");
+                sql.Append("          AND ATT.A_VALUE = PDD.DESCRIPTION )) ");
+                sql.Append("        )END) AS ID_SUB_PORTA ");
+
+                sql.Append("        FROM COMPONENT_POINT CP ");
+                sql.Append("        LEFT JOIN PD_POINT_DESCRIPTION PDD ON PDD.POINT_ID = CP.POINT_ID ");
+                sql.Append("        ,COMPONENT C ");
+                sql.Append("        ,OST_OBJ_STATE OS ");
+                sql.Append("        ,STY_STATETYPE ST ");
+                sql.Append("        ,DES_DESIGNATION DES ");
+                sql.Append("        WHERE CP.COMPONENT_ID = C.COMPONENT_ID ");
+                sql.Append("        AND ST.STATETYPE_ID = OS.STATETYPE_ID ");
+                sql.Append("        AND OS.OBJECT_ID = CP.POINT_ID ");
+                sql.Append("        AND DES.DESIGNATION_ID = C.DESIGNATION_ID ");
+                sql.Append("        AND DES.DESIG_KIND_ID = 271 ");
+                sql.Append("        AND CP.SIDE = 'L' ");
+                sql.Append("        ORDER BY CP.POINT_ID ");
+                sql.Append("     )A ");
+                sql.Append("   )B ");
+                sql.Append("  )C ");
+                sql.Append("   WHERE COMPONENT_ID IS NOT NULL ");
+                
+                if (!circuito.Equals(""))
+                    sql.Append("   AND CIRCUITO = '" + circuito + "' ");
+
+                if (!cto.Equals(""))
+                    sql.Append("   AND CTO LIKE '%" + cto + "%' ");
+
+                if (!olt.Equals(""))
+                    sql.Append("   AND OLT LIKE '%" + olt + "%' ");
+
+                sql.Append(")D ");
+
+                return ConnectionOracleDal.ExecutaSqlRetorno(sql.ToString()).Tables[0];
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+    }
+}

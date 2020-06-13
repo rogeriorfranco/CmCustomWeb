@@ -1,0 +1,103 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomDto;
+using CmCustomBll;
+using System.Data;
+
+namespace CmCustomUi.facility
+{
+    public partial class change : System.Web.UI.Page
+    {
+        FacilityBll facilityBll = new FacilityBll();
+
+        private void fillFields()
+        {
+            DataRow drCto = facilityBll.getFacilityCTOByIdPonto(Convert.ToInt32(Session["POINT_ID"]));
+            txtCto.Text = drCto["CTO"].ToString().Trim();
+            txtEstacao.Text = drCto["ESTACAO"].ToString();
+            txtCnl.Text = drCto["CNL"].ToString();
+            txtPortaCTO.Text = drCto["POINT_NAME"].ToString();
+            txtLocalidade.Text = drCto["LOCALIDADE"].ToString();
+            txtPais.Text = "BR";
+            ddlStatus.SelectedValue = drCto["STATUS"].ToString();
+            txtCircuito.Text = drCto["CIRCUITO"].ToString();
+
+            if (Session["ID_SUB_PORTA"] != DBNull.Value)
+            {
+                DataRow drOlt = facilityBll.getFacilityOLTByIdSubPorta(Convert.ToInt32(Session["ID_SUB_PORTA"]), Convert.ToInt32(Session["COMPONENT_ID_PORTA_OLT"]));
+
+                txtIPOlt.Text = drOlt["IP_DADOS_OLT"].ToString();
+                txtOlt.Text = drOlt["OLT"].ToString();
+                txtModelo.Text = drOlt["MODELO"].ToString();
+                txtShelf.Text = drOlt["SLOT"].ToString().Split('/')[0].ToString();
+                txtSlot.Text = drOlt["SLOT"].ToString().Split('/')[1].ToString();
+                txtPorta.Text = drOlt["SLOT"].ToString().Split('/')[2].ToString();
+                txtTecnologia.Text = "GPON - " + drOlt["FABRICANTE"].ToString();
+                txtOnt.Text = drOlt["ONT_ID"].ToString();
+              
+                //Verificar
+                if (drOlt["VLAN_OUTER_INNER"] != "")
+                {
+                    txtVlanInner.Text = drOlt["VLAN_OUTER_INNER"].ToString().Split(':')[0].ToString();
+                    txtVlan.Text = drOlt["VLAN_OUTER_INNER"].ToString().Split(':')[1].ToString();
+                }
+                txtVlanCompartilhada.Text = drOlt["VLAN_BANDA_LARGA"].ToString();
+                txtCliente.Text = drOlt["CLIENTE"].ToString();
+                txtProduto.Text = drOlt["PRODUTO"].ToString();
+                txtBandaMB.Text = drOlt["BANDA_MB"].ToString();
+                txtBandaUpLink.Text = drOlt["BANDA_UPLINK"].ToString();
+                txtSerial.Text = drOlt["SERIAL"].ToString();
+                txtDtValidadeReserva.Text = drOlt["VALIDADE_RESERVA"].ToString();
+                txtBairro.Text = drOlt["BAIRRO"].ToString();
+                txtLogradouro.Text = drOlt["LOGRADOURO"].ToString();
+                txtNumeroLote.Text = drOlt["NUMERO_LOTE"].ToString();
+                txtComplementoEndereco1.Text = drOlt["COMPLEMENTO_NIVEL_1"].ToString();
+                txtComplementoDescricaoEndereco1.Text = drOlt["COMPLEMENTO_NIVEL_1_DESCRICAO"].ToString();
+                txtComplementoEndereco2.Text = drOlt["COMPLEMENTO_NIVEL_2"].ToString();
+                txtComplementoDescricaoEndereco2.Text = drOlt["COMPLEMENTO_NIVEL_2_DESCRICAO"].ToString();
+                txtComplementoEndereco3.Text = drOlt["COMPLEMENTO_NIVEL_3"].ToString();
+                txtComplementoDescricaoEndereco3.Text = drOlt["COMPLEMENTO_NIVEL_3_DESCRICAO"].ToString();
+            }
+            else
+            {
+                Olt olt = (Olt)Session["olt_search"];
+                txtOlt.Text = olt.nome;
+                txtModelo.Text = olt.modelo;
+                txtIPOlt.Text = olt.ipOlt;
+                txtShelf.Text = olt.shelf;
+                txtSlot.Text = olt.slot;
+                txtPorta.Text = olt.porta;
+                txtTecnologia.Text = "GPON " + olt.tecnologia;
+                Session["olt_search"] = null;
+            }
+        }
+
+        private void save()
+        {
+            try
+            {
+                OperationsCmApiBll operationsCmApiBll = new OperationsCmApiBll();
+                operationsCmApiBll.atualizaPontoCompoment(Convert.ToInt32(Session["POINT_ID"]), txtCircuito.Text, ddlStatus.SelectedValue);
+            }
+            catch (Exception ex)
+            {
+                Utility.Alertbootsrap(ex.Message, this, null);
+            }
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {            
+            if (!Page.IsPostBack)
+                fillFields();
+        }
+
+        protected void lbSalvar_Click(object sender, EventArgs e)
+        {
+            save();
+        }
+    }
+}

@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CmCustomDal;
+using CmCustomDto;
+using System.Data;
+
+namespace CmCustomBll
+{
+    public class AcessHistoricBll
+    {
+        IAcessHistoricDal acessHistoricDal = new AcessHistoricDal();
+
+        public void insereHistoricoAcesso(AcessHistoric acessHistoric)
+        {
+            acessHistoricDal.insereHistoricoAcesso(acessHistoric);
+        }
+
+        public DataTable consultaHistorico()
+        {
+          return  acessHistoricDal.consultaHistorico();
+        }
+    }
+}

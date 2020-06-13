@@ -1,0 +1,212 @@
+﻿using CmCustomDal;
+using CmCustomDto;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomBll
+{
+    public class OperationsCmApiBll
+    {
+        IOperationsCmApiDal operationsCmAPI = new OperationsCmApiDal();
+        public Olt atualizaFacilidades(int compPointID, Olt olt, Facility facility, string acao)
+        {
+            try
+            {
+                FacilityHistoricDal facilityHistoricDal = new FacilityHistoricDal();
+                olt.acao = acao;
+
+                if (acao.Equals("SALVAR"))
+                {
+                    if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO")) && string.IsNullOrEmpty(olt.circuito.Trim()))
+                        throw new Exception("O preenchimento do Circuito é obrigatório para o status OCUPADO e DESIGNADO");
+
+                    FacilityDal facilityDal = new FacilityDal();
+                    if (facilityDal.getCountCircuit(olt.circuito.Trim(), olt.status, compPointID) >= 1)
+                        throw new Exception("Já existe esse circuito cadastrado no Connect Master com status: " + olt.status);
+
+                    if (!string.IsNullOrEmpty(olt.vlan_outer) || !string.IsNullOrEmpty(olt.vlan_inner))
+                    {
+                        int totalVlan = facilityDal.getCountVlan(string.Concat(olt.vlan_outer, ":", olt.vlan_inner), olt.idSubPorta);
+                        if (totalVlan >= 1)
+                            throw new Exception("Já existe (" + totalVlan + ") vlan outer inner (" + string.Concat(olt.vlan_outer, ":", olt.vlan_inner) + ") cadastrado no Connect Master");
+                    }
+
+                    if (olt.idSubPorta != 0)
+                    {
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO")) && (string.IsNullOrEmpty(olt.vlan_inner) || string.IsNullOrEmpty(olt.vlan_outer)))
+                            throw new Exception("O preenchimento da Vlan inner outer é obrigatório para o status OCUPADO e DESIGNADO");
+
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.cliente.Trim()))
+                            throw new Exception("O preenchimento do Cliente é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.produto.Trim()))
+                            throw new Exception("O preenchimento do Produto é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.banda_mb.Trim()))
+                            throw new Exception("O preenchimento do Banda MB é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.banda_uplink.Trim()))
+                            throw new Exception("O preenchimento do Banda UPLINK é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if (olt.status.Equals("OCUPADO") && string.IsNullOrEmpty(olt.serial.Trim()))
+                            throw new Exception("O preenchimento do Serial é obrigatório para o status OCUPADO");
+
+                        if (olt.status.Equals("OCUPADO") && string.IsNullOrEmpty(olt.ont_id.Trim()))
+                            throw new Exception("O preenchimento do Ont ID é obrigatório para o status OCUPADO");
+                    }
+                    else
+                    {
+                        operationsCmAPI.atualizaPontoCompoment(compPointID, olt.circuito.Trim(), olt.status);
+                        facilityHistoricDal.save(facility);
+                        throw new Exception("Circuito registrado apenas na CTO, " + olt.nome + " sem sub porta disponivel");
+                    }
+
+                    operationsCmAPI.atualizaPontoCompoment(compPointID, olt.circuito.Trim(), olt.status);
+                    operationsCmAPI.atualizaAtributosPortaOLT(olt);
+                    facilityHistoricDal.save(facility);
+                    olt.save = true;
+                    throw new Exception("Facilidades alteradas com sucesso");
+                }
+
+                if (acao.Equals("LIBERAR"))
+                {
+                    operationsCmAPI.atualizaPontoCompoment(compPointID, string.Empty, "VAGO");
+                    operationsCmAPI.atualizaAtributosPortaOLT(clearOlt(olt));
+                    facilityHistoricDal.save(clearfacility(facility));
+                }
+
+                return olt;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+
+        }
+
+        private Olt clearOlt(Olt olt)
+        {
+            olt.status = "VAGO";
+            olt.circuito = string.Empty;
+            olt.cliente = string.Empty;
+            olt.banda_mb = "0";
+            olt.banda_uplink = "0";
+            olt.serial = string.Empty;
+            olt.produto = string.Empty;
+            olt.bairro = string.Empty;
+            olt.nro_lote = "0";
+            olt.validade_reserva = string.Empty;
+            olt.idlogradouro = 0;
+            olt.modelo_ont = string.Empty;
+            olt.observacao = string.Empty;
+            if (olt.acao.Equals("REDESIGNAR"))
+            {
+                olt.compl_nivel_1 = string.Empty;
+                olt.compl_nivel_1_descricao = string.Empty;
+                olt.compl_nivel_2 = string.Empty;
+                olt.compl_nivel_2_descricao = string.Empty;
+                olt.compl_nivel_3 = string.Empty;
+                olt.compl_nivel_3_descricao = string.Empty;
+            }
+            return olt;
+        }
+
+        private Facility clearfacility(Facility facility)
+        {
+            facility.circuito_novo = string.Empty;
+            facility.status_novo = string.Empty;
+            facility.cliente_novo = string.Empty;
+            facility.produto_novo = string.Empty;
+            facility.banda_mb_novo = string.Empty;
+            facility.banda_uplink_novo = string.Empty;
+            facility.ont_id_novo = string.Empty;
+            facility.serial_novo = string.Empty;
+            facility.vlan_inner_novo = string.Empty;
+            facility.vlan_novo = string.Empty;
+            facility.validade_reserva_novo = string.Empty;
+            return facility;
+        }
+
+        public string getSession()
+        {
+            return operationsCmAPI.getSession();
+        }
+
+        public void redesignateFacility(string usuario, int idOltActual, int idOltNew, int pointIdActual, int subPortaIdActual, int pointIdNew, int subPortaIdNew, string circuito, string status)
+        {
+            try
+            {
+                FacilityDal facilityDal = new FacilityDal();
+                Olt olt = new Olt();
+                olt = facilityDal.getOLTAttributsByIdSubPorta(subPortaIdActual, idOltNew);
+                olt.idSubPorta = subPortaIdNew;
+                olt.acao = "REDESIGNAR";
+                olt.copyVlan = (idOltActual.Equals(idOltNew) ? true : false);
+                operationsCmAPI.atualizaPontoCompoment(pointIdNew, circuito, status);
+                operationsCmAPI.atualizaAtributosPortaOLT(olt);
+                                                   
+                if (olt.copyVlan == false)
+                {
+                    FacilityHistoricDal facilityHistoricDal = new FacilityHistoricDal();
+                    Facility facility = new Facility();
+                    Cto cto = new Cto();
+                    cto = facilityDal.getCtoDetaisPort(pointIdNew);
+
+                    facility.usuario = usuario;
+                    facility.cto = cto.nome;
+                    facility.cnl = cto.cnl;
+                    facility.localidade = cto.localidade;
+                    facility.porta_cto = cto.ponto;
+                    facility.ip_olt = olt.ipOlt;
+                    facility.shelf = cto.shelf_slot_porta.Split('/').First();
+                    facility.slot = cto.shelf_slot_porta.Split('/')[1];
+                    facility.porta = cto.shelf_slot_porta.Split('/').Last();
+
+                    facility.circuito_novo = olt.circuito;
+                    facility.status_novo = olt.status;
+                    facility.cliente_novo = olt.cliente;
+                    facility.produto_novo = olt.produto;
+                    facility.banda_mb_novo = olt.banda_mb;
+                    facility.banda_uplink_novo = olt.banda_uplink;
+                    facility.ont_id_novo = olt.ont_id;
+                    facility.serial_novo = olt.serial;
+                    string vlan_outer_inner = facilityDal.getVlanByIdSubPorta(subPortaIdNew);
+                    facility.vlan_inner_novo = vlan_outer_inner.Split(':').Last();
+                    facility.vlan_novo = vlan_outer_inner.Split(':').First(); 
+                    facility.validade_reserva_novo = olt.validade_reserva;
+                    
+                    facility.circuito_antigo = olt.circuito;
+                    facility.status_antigo = olt.status;
+                    facility.cliente_antigo = olt.cliente;
+                    facility.produto_antigo = olt.produto;
+                    facility.banda_mb_antigo = olt.banda_mb;
+                    facility.banda_uplink_antigo = olt.banda_uplink;
+                    facility.ont_id_antigo = olt.ont_id;
+                    facility.serial_antigo = olt.serial;
+                    facility.vlan_inner_antigo = olt.vlan_inner;
+                    facility.vlan_antigo = olt.vlan_outer;
+                    facility.validade_reserva_antigo = olt.validade_reserva;
+                    facilityHistoricDal.save(facility);
+                }
+
+                operationsCmAPI.atualizaPontoCompoment(pointIdActual, string.Empty, "VAGO");
+                olt.idSubPorta = subPortaIdActual;
+                operationsCmAPI.atualizaAtributosPortaOLT(clearOlt(olt));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public int CreateAttributSubPorts(int idComponent)
+        {
+            return operationsCmAPI.CreateAttributSubPorts(idComponent);
+        }
+    }
+}

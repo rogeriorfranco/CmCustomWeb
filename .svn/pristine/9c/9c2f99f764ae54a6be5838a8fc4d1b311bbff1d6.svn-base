@@ -1,0 +1,48 @@
+﻿using CmCustomDto;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace CmCustomUi.facility
+{
+    public partial class redesignate : System.Web.UI.Page
+    {
+        static Cto cto = new Cto();
+
+        private void fillFields()
+        {            
+            if (Session["cto_redesignate"] != null)
+                cto = (Cto)Session["cto_redesignate"];
+
+            txtCircuito.Text = cto.circuito;
+            txtIP.Text = cto.ipOlt;
+            txtShelf.Text = cto.shelf_slot_porta.Split(':').First();
+            txtSlot.Text = cto.shelf_slot_porta.Split(':')[1].ToString();
+            txtPorta.Text = cto.shelf_slot_porta.Split(':').Last();
+            txtPortaCto.Text = cto.ponto;
+            txtCliente.Text = cto.cliente;
+            txtStatus.Text = cto.status;
+
+            Session["cto_redesignate"] = null;
+        }
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!Page.IsPostBack)
+                fillFields();
+        }
+
+        protected void lbRedesignar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void lbVoltar_Click(object sender, EventArgs e)
+        {
+            Session["FILTRO_LIBERADO"] = cto.nome;
+            Response.Redirect("search", false);
+        }
+    }
+}

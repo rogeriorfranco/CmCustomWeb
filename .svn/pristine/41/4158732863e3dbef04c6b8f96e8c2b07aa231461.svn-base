@@ -1,0 +1,99 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public class Utility
+{
+    /// <summary>
+    /// Método de paginação do gridview
+    /// </summary>
+    /// <param name="gridView">passar o nome do gridview</param>
+    /// <param name="e"></param>
+    /// <param name="dt">fonte de dados</param>
+    public static void PaginacaoGridView(GridView gridView, GridViewPageEventArgs e, object dt)
+    {
+        gridView.DataSource = dt;
+        gridView.PageIndex = e.NewPageIndex;
+        gridView.DataBind();
+    }
+
+    public static void Alertbootsrap(string msg, Page page, UpdatePanel up)
+    {
+        try
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine("$(document).ready(function() {");
+            sb.AppendLine("$('.modal-body #modalId').html('" + msg + "') ");
+            sb.AppendLine("$('#myModal').modal('show');");
+            sb.AppendLine(" });");
+            UserControl uc = (UserControl)page.LoadControl("~/UserControls/UserControlAlertBootstrap.ascx");
+            up.ContentTemplateContainer.Controls.Add(uc);
+            ScriptManager.RegisterClientScriptBlock(page, typeof(Page), Guid.NewGuid().ToString(), sb.ToString(), true);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public static void AlertbootsrapConfirm(string msg, Page page, UpdatePanel up)
+    {
+        try
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine("$(document).ready(function() {");
+            sb.AppendLine("$('.modal-body #modalId').html('" + msg + "') ");
+            sb.AppendLine("$('#myModal').modal('show');");
+            sb.AppendLine(" });");
+            ScriptManager.RegisterClientScriptBlock(page, typeof(Page), Guid.NewGuid().ToString(), sb.ToString(), true);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public static void ExportDataTableCsv(DataTable dt, string nomeArquivo)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine(string.Join(",", dt.Columns.Cast<DataColumn>()
+            .Select(col => "\"" + col.ColumnName + "\"")));
+
+        dt.AsEnumerable().Select(row => sb.AppendLine(
+            string.Join(",", row.ItemArray.Select(field => string.Concat("\"", Regex.Replace(field.ToString(), "(\n|\r)+", ""), "\""))))).ToList();
+
+        HttpResponse response = HttpContext.Current.Response;
+        response.Clear();
+        response.AddHeader("content-disposition", "attachment;filename=" + nomeArquivo + ".csv");
+        response.ContentType = "application/csv";
+        response.Write(sb.ToString());
+        response.End();
+    }
+
+    public static void ExportarDataTableExcel(object dt, string nomeArquivo)
+    {
+        HttpResponse response = HttpContext.Current.Response;
+        response.Clear();
+        response.AddHeader("content-disposition", "attachment;filename=" + nomeArquivo + ".xls");
+        response.ContentType = "application/vnd.ms-excel";
+        using (StringWriter stringWrite = new StringWriter())
+        {
+            using (HtmlTextWriter htmlWrite = new HtmlTextWriter(stringWrite))
+            {
+                DataGrid dg = new DataGrid();
+                dg.DataSource = dt;
+                dg.DataBind();
+                dg.RenderControl(htmlWrite);
+            }
+            response.Write(stringWrite.ToString());
+            response.End();
+        }
+    }
+}

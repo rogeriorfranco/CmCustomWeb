@@ -1,0 +1,57 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Runtime.Serialization.Json;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomDto;
+using CmCustomBll;
+using System.Data;
+using System.Net.Sockets;
+namespace CmCustomUi.networkMap
+{
+    public partial class search : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            Page.Form.DefaultButton = lbPesquisar.UniqueID;
+        }
+
+
+        private void getNetworkMap()
+        {
+            try
+            {
+                ddlBairro.Items.Add(Request.Form["ctl00$ContentPlaceHolder$ddlBairro"]);
+
+
+                if (string.IsNullOrWhiteSpace(txtLatitude.Text) && string.IsNullOrWhiteSpace(txtLongitude.Text) &&
+                    !string.IsNullOrWhiteSpace(txtLocalidade.Text) && !string.IsNullOrWhiteSpace(txtLogradouro.Text))
+                { 
+                    iFrameMaps.Src = string.Format("../map/view?estado=" + ddlEstado.SelectedValue + "&localidade=" + txtLocalidade.Text + "&bairro=" + ddlBairro.SelectedValue + "&logradouro=" + txtLogradouro.Text + "&numero=" + txtNumero.Text + "&raio=" + ddlRaio.SelectedValue + "&filtro=" + ddlElementos.SelectedValue + "");
+                    return;    
+                }
+                
+                if (!string.IsNullOrWhiteSpace(txtLatitude.Text) && !string.IsNullOrWhiteSpace(txtLongitude.Text))
+                    iFrameMaps.Src = string.Format("../map/view?lat=" + txtLatitude.Text + "&long=" + txtLongitude.Text + "&raio=" + ddlRaio.Text + "&filtro=" + ddlElementos.SelectedValue + " ");
+                                     
+            }
+            catch (Exception ex)
+            {                           
+                Utility.Alertbootsrap(string.Concat(ex.Message, " - ", ex.InnerException), this, upPesquisar);
+            }
+        }
+
+        protected void lbPesquisar_Click(object sender, EventArgs e)
+        {
+            getNetworkMap();
+        }
+
+
+
+
+    }
+}

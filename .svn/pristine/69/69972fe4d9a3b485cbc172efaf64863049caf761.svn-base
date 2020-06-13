@@ -1,0 +1,87 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Runtime.Serialization.Json;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomDto;
+using CmCustomBll;
+using System.Data;
+namespace CmCustomUi.viability
+{
+    public partial class search : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+
+
+        }
+
+        private void getViability()
+        {
+            LocalityBll localityBll = new LocalityBll();
+            DataRow dr = localityBll.getCodLocalidadeCodLogradouro(txtCidade.Text, txtLogradouro.Text);
+
+            if (dr != null)
+            {
+                WebClient proxy = new WebClient();
+                string serviceURL = string.Format("https://cmhomws/CmCustomAPI/Aprovisionamento/VIABILIDADE/NULL/NULL/NULL/NULL/NULL/" + dr["COD_LOCALIDADE"] + "/NULL/OCUPADO/FALSO/NULL/N/NULL/" + dr["COD_LOG"] + "/" + txtBairro.Text + "/" + txtNumero.Text + "/NULL/NULL/NULL/NULL/NULL/NULL/NULL/NULL");
+                byte[] data = proxy.DownloadData(serviceURL);
+                Stream stream = new MemoryStream(data);
+                DataContractJsonSerializer obj = new DataContractJsonSerializer(typeof(Elements));
+                Elements elements = obj.ReadObject(stream) as Elements;
+                txtCto.Text = elements.cto;
+                txtEstacao.Text = elements.estacao;
+                txtLocalidade.Text = elements.localidade;
+                txtCnl.Text = elements.cnl;
+                txtPortaCto.Text = elements.porta_cto;
+                txtStatus.Text = elements.status;
+                txtInnerVlan.Text = elements.vlan_inner;
+                txtVlan.Text = elements.vlan;
+                txtOlt.Text = elements.olt;
+                txtIpOlt.Text = elements.ip_olt;
+                txtVlanVobb.Text = elements.vlan_vobb;
+                txtModeloOlt.Text = elements.modelo;
+                txtShelf.Text = elements.shelf;
+                txtSlot.Text = elements.slot;
+                txtPortaFisica.Text = elements.porta;
+                txtPortaLogica.Text = elements.porta_logica;
+                txtVelocidades.Text = elements.velocidades;
+
+                if (elements.status_viabilidade == "VIAVEL")
+                    divMsg.Attributes.Add("class", "alert alert-success alert-dismissible");
+
+                if (elements.status_viabilidade == "INVIAVEL")
+                    divMsg.Attributes.Add("class", "alert alert-danger alert-dismissible");
+
+                if (elements.status_viabilidade != null)
+                {
+                    divMsg.Visible = true;
+                    lblMsg.Text = elements.status_viabilidade + " - " + elements.desc_retorno;
+                }
+                else
+                {
+                    divMsg.Visible = false;
+                    lblMsg.Text = string.Empty;
+                }
+            }
+            else
+            {
+                divMsg.Attributes.Add("class", "alert alert-danger alert-dismissible");
+                divMsg.Visible = true;
+                lblMsg.Text = "COD_LOGRADOURO e COD_LOCALIDADE não localizado";
+            }
+        }
+
+        protected void lbPesquisar_Click(object sender, EventArgs e)
+        {
+            getViability();
+        }
+
+     
+    }
+}

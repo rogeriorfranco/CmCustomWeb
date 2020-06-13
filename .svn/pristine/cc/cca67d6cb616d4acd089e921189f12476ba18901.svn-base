@@ -1,0 +1,28 @@
+﻿using CmCustomDal;
+using System;
+using System.Data;
+
+namespace CmCustomBll
+{
+    public class ReportBll
+    {
+        IReportDal relatorioDal = new ReportDal();
+
+        public DataTable relatorioBandaOltTotal(string olt)
+        {
+            return relatorioDal.relatorioBandaOltTotal(olt);
+        }
+
+        public DataTable relatorioGeralFacilidade(string circuito, string cto, string olt, string status)
+        {
+            try
+            {                
+                return relatorioDal.relatorioGeralFacilidade(circuito, cto, olt, status);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+    }
+}

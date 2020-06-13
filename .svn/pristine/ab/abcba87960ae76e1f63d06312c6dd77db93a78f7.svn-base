@@ -1,0 +1,13 @@
+﻿$(document).ready(function () {
+    $("#lbLimpar").click(function () {
+        limpaCamposFacilidades()
+        //alert("Handler for .click() called.");
+    });
+});
+
+function limpaCamposFacilidades() {
+    $('#txtOnt').val("");
+    //$('#ddlCidade').text("0");
+
+
+}

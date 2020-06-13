@@ -1,0 +1,124 @@
+﻿using DDesign.API;
+using DDesign.API.Components;
+using Attribute = DDesign.API.Attributes.Attribute;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CmCustomDto;
+
+namespace CmCustomDal
+{
+    public class OperationsCmApiDal : IOperationsCmApiDal
+    {
+        static ConnectMasterAPI cmAPI = connectionPool();
+        static ConnectMasterAPI connectionPool()
+        {
+            ConnectMasterAPI mAPI = cmAPI;
+            if (mAPI == null)
+            {
+                mAPI = ConnectionCmDal.getConnectionCm();
+            }
+            return mAPI;
+        }
+
+        public string getSession()
+        {
+            return cmAPI.Ticket.Connected.ToString();
+        }
+
+        public void atualizaPontoCompoment(int compPointID, string circuito, string status)
+        {
+            IFacilityDal facilityDal = new FacilityDal();
+            ComponentPoint componentPoint = cmAPI.ComponentPoints.ReadElement(compPointID) as ComponentPoint;
+            componentPoint.ObjectState.StateTypeId = facilityDal.getIdStatusCompomentPoint(status);
+            componentPoint.Description = circuito.TrimStart();
+            componentPoint.UpdateDetails();
+        }
+
+        public void atualizaAtributosPortaOLT(Olt olt)
+        {
+            Dictionary<int, IEnumerable<int>> attributosPortid = ReadAttributePortsIds(olt.idSubPorta);
+
+            foreach (int attrId in attributosPortid[olt.idSubPorta])
+            {
+                Attribute attributPorts = cmAPI.Attributes.ReadElement(attrId) as Attribute;
+
+                if (attributPorts.Name.Equals("STATUS"))
+                {
+                    attributPorts.Value = olt.status;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("CIRCUITO"))
+                {
+                    attributPorts.Value = olt.circuito.TrimStart();
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("CLIENTE"))
+                {
+                    attributPorts.Value = olt.cliente;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("BANDA_MB"))
+                {
+                    attributPorts.Value = olt.banda_mb;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("BANDA_UPLINK"))
+                {
+                    attributPorts.Value = olt.banda_uplink;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("SERIAL_ONT"))
+                {
+                    attributPorts.Value = olt.serial;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("PRODUTO"))
+                {
+                    attributPorts.Value = olt.produto;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("BAIRRO"))
+                {
+                    attributPorts.Value = olt.bairro;
+                    attributPorts.UpdateDetails();
+                }
+                if (olt.acao.Equals("SALVAR"))
+                    if (attributPorts.Name.Equals("VLAN_OUTER:INNER") && olt.vlan_outer != "" && olt.vlan_inner != "")
+                    {
+                        attributPorts.Value = string.Concat(olt.vlan_outer, ":", olt.vlan_inner);
+                        attributPorts.UpdateDetails();
+                    }
+                if (attributPorts.Name.Equals("ONT_ID"))
+                {
+                    attributPorts.Value = olt.ont_id.TrimStart();
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("LOGRADOURO"))
+                {
+                    attributPorts.Value = olt.idlogradouro;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("NUMERO_LOTE"))
+                {
+                    attributPorts.Value = olt.nro_lote;
+                    attributPorts.UpdateDetails();
+                }
+                if (attributPorts.Name.Equals("VALIDADE_RESERVA"))
+                {
+                    attributPorts.Value = olt.validade_reserva;
+                    attributPorts.UpdateDetails();
+                }
+
+            }
+        }
+
+        public Dictionary<int, IEnumerable<int>> ReadAttributePortsIds(int id)
+        {
+            return cmAPI.Ports.ReadAttributeIds(new List<int> { id });
+        }
+
+    }
+}

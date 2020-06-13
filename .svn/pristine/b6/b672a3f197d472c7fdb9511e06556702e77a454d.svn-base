@@ -1,0 +1,103 @@
+﻿function fillBairroByIdLocalidade(idLogradouro) {
+    $.ajax({
+        type: "POST",
+        url: "../ws/WebService.asmx/getBairroByIdLogradouro",
+        data: '{ idLogradouro:"' + idLogradouro + '"}',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (resp) {
+            $("#ddlBairro").empty();
+            for (var i = 0; i < resp.d.length; i++) {
+                $("#ddlBairro").append('<option>' + resp.d[i] + '</option>');
+            }
+        },
+        error: function () {
+            alert("An error has occurred during processing your request.");
+        }
+    });
+}
+
+
+$(document).ready(function () {
+    $("#txtLogradouro").autocomplete({
+        minLength: 3,
+        source: function (request, response) {
+            $.ajax({
+                url: "../ws/WebService.asmx/getLogradouroByLocalidade",
+                data: '{ idLocalidade:"' + $("#hfLocalidade").val() + '" , logradouro:"' + $("#txtLogradouro").val() + '"}',
+                dataType: "json",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",                
+                success: function (data) {
+                    response($.map(data.d, function (item) {                        
+                        return {
+                            label: item.split(':')[1],
+                            val: item.split(':')[0]
+                        }
+                    }))
+                }
+            });
+        },
+        select: function (e, i) {
+            $("#hfLogradouro").val(i.item.val);
+            fillBairroByIdLocalidade(i.item.val);
+            $("#txtNumero").focus();
+        },        
+    });
+});
+
+
+$(document).ready(function () {
+    $("#txtMunicipio").autocomplete({
+        minLength: 3,
+        source: function (request, response) {
+            $.ajax({
+                url: "../ws/WebService.asmx/getMunicipioByEstado",
+                data: '{ estado:"' + $("#ddlEstado option:selected").text() + '" , municipio:"' + $("#txtMunicipio").val() + '"}',
+                dataType: "json",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    response($.map(data.d, function (item) {
+                        return {
+                            label: item.split(':')[1],
+                            val: item.split(':')[0]
+                        }
+                    }))
+                }
+            });
+        },
+        select: function (e, i) {
+            $("#hfMunicipio").val(i.item.val);
+            $("#txtLocalidade").focus();
+        },
+    });
+});
+
+
+$(document).ready(function () {
+    $("#txtLocalidade").autocomplete({
+        minLength: 3,
+        source: function (request, response) {
+            $.ajax({
+                url: "../ws/WebService.asmx/getLocalidadeByMunicipio",
+                data: '{ idMunicipio:"' + $("#hfMunicipio").val() + '" , localidade:"' + $("#txtLocalidade").val() + '"}',
+                dataType: "json",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    response($.map(data.d, function (item) {
+                        return {
+                            label: item.split(':')[1],
+                            val: item.split(':')[0]
+                        }
+                    }))
+                }
+            });
+        },
+        select: function (e, i) {
+            $("#hfLocalidade").val(i.item.val);
+            $("#txtLogradouro").focus();
+        },        
+    });
+});

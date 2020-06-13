@@ -1,0 +1,88 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Novell.Directory.Ldap;
+using CmCustomDto;
+using CmCustomDal;
+
+namespace CmCustomBll
+{
+    public class LoginBll
+    {
+        static Usuario usuarioLdap = new Usuario();
+        
+        public Usuario autentication(string user, string password)
+        {
+            LdapConnection ldap = new LdapConnection();
+            ldap.Connect("ldapctbc.network.ctbc", 389);
+
+            if (ldap.Connected)
+            {
+                try
+                {
+                    ldap.Bind("cn= " + user + ",ou=ASSOCIADO,cn=users,dc=network,dc=ctbc", password);
+                    ldap.Bind("cn=BIND_CONNECT_MASTER,ou=especial,cn=users,dc=network,dc=ctbc", "C0nn3ct3M@st3rW3b");
+
+                    LdapSearchResults search = ldap.Search("cn=users,dc=network,dc=ctbc", LdapConnection.SCOPE_SUB, "uid=" + user, null, false);
+                    LdapEntry entry = search.next();
+                    LdapAttributeSet attribute = entry.getAttributeSet();
+
+                    usuarioLdap.CPF = attribute.getAttribute("CPF").StringValue;
+                    usuarioLdap.nomeAssociado = attribute.getAttribute("DISPLAYNAME").StringValue;
+                    usuarioLdap.centroResultado = attribute.getAttribute("DEPARTMENTNUMBER").StringValue;
+                    usuarioLdap.email = attribute.getAttribute("MAIL").StringValue;
+                    usuarioLdap.tipo_usuario = attribute.getAttribute("TIPOUSUARIO").StringValue;
+                    
+                    if (checkAccess("cn=USUARIO,cn=CONNECT_MASTER_WEB,cn=PERFIS,dc=network,dc=ctbc", "cn=" + user + ",ou=associado,cn=users,dc=network,dc=ctbc", ldap))
+                        return usuarioLdap;
+
+                    if (checkAccess("cn=LEITURA,cn=CONNECT_MASTER_WEB,cn=PERFIS,dc=network,dc=ctbc", "cn=" + user + ",ou=associado,cn=users,dc=network,dc=ctbc", ldap))
+                        return usuarioLdap;
+
+                    if (checkAccess("cn=ADMINISTRADOR_REDE,cn=CONNECT_MASTER_WEB,cn=PERFIS,dc=network,dc=ctbc", "cn=" + user + ",ou=associado,cn=users,dc=network,dc=ctbc", ldap))
+                        return usuarioLdap;
+
+                    if (checkAccess("cn=ADMINISTRADOR_TI,cn=CONNECT_MASTER_WEB,cn=PERFIS,dc=network,dc=ctbc", "cn=" + user + ",ou=associado,cn=users,dc=network,dc=ctbc", ldap))
+                        return usuarioLdap;
+
+                }
+                catch (LdapException)
+                {
+                    throw new Exception("Usuário ou Senha Incorreta!");
+                }
+                finally
+                {
+                    ldap.Disconnect();
+                }
+            }
+            return usuarioLdap;
+        }
+
+        private bool checkAccess(string dnPerfil, string user, LdapConnection ldap)
+        {
+            try
+            {
+                LdapSearchResults search = ldap.Search(dnPerfil, LdapConnection.SCOPE_SUB, null, null, false);
+                LdapEntry entry = search.next();
+                LdapAttributeSet attribute = entry.getAttributeSet();
+                LdapAttribute attrib = attribute.getAttribute("uniquemember");
+
+                if (attrib != null)
+                {
+                    usuarioLdap.perfil = attribute.getAttribute("cn").StringValue;
+                    return attrib.StringValueArray.Contains(user);
+                }
+            }
+            catch (LdapException e)
+            {
+                throw new Exception("Erro ao buscar Usuários no grupo " + dnPerfil + "Msg:" + e.Message);
+            }
+
+            return false;
+        }
+
+
+    }
+}

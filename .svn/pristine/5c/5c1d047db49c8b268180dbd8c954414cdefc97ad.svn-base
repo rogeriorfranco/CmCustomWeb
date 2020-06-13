@@ -1,0 +1,205 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using CmCustomDto;
+using CmCustomBll;
+using System.Data;
+
+namespace CmCustomUi.facility
+{
+    public partial class change : System.Web.UI.Page
+    {
+        FacilityBll facilityBll = new FacilityBll();
+        Facility facility = new Facility();
+        Olt olt = new Olt();
+        static Cto cto = new Cto();
+        static DataRow drOlt = null;
+
+        private void checkProfile()
+        {
+            if (Session["perfil"].Equals("LEITURA"))
+            {
+                lbSalvar.Visible = false;
+                lbLiberar.Visible = false;
+            }
+
+            if (Session["perfil"].Equals("ADMINISTRADOR_REDE") || Session["perfil"].Equals("ADMINISTRADOR_TI"))
+            {
+                txtVlan.ReadOnly = false;
+                txtVlanInner.ReadOnly = false;
+            }
+        }
+
+        private void fillFields()
+        {
+            checkProfile();
+            if (Session["cto_search"] != null)
+                cto = (Cto)Session["cto_search"];
+            txtCto.Text = cto.nome;
+            txtEstacao.Text = cto.estacao;
+            txtCnl.Text = cto.cnl;
+            txtPortaCTO.Text = cto.ponto;
+            txtLocalidade.Text = cto.localidade;
+            txtPais.Text = "BR";
+            ddlStatus.SelectedValue = cto.status;
+            txtCircuito.Text = cto.circuito;
+            Session["cto_search"] = null;
+
+            if (Session["ID_SUB_PORTA"] != DBNull.Value)
+            {
+                drOlt = facilityBll.getFacilityOLTByIdSubPorta(Convert.ToInt32(Session["ID_SUB_PORTA"]), Convert.ToInt32(Session["COMPONENT_ID_PORTA_OLT"]));
+
+                hfLogradouro.Value = Session["ID_LOGRADOURO"].ToString();
+                txtIPOlt.Text = drOlt["IP_DADOS_OLT"].ToString();
+                txtOlt.Text = drOlt["OLT"].ToString();
+                txtModelo.Text = drOlt["MODELO"].ToString();
+                txtShelf.Text = drOlt["SLOT"].ToString().Split('/')[0].ToString();
+                txtSlot.Text = drOlt["SLOT"].ToString().Split('/')[1].ToString();
+                txtPorta.Text = drOlt["SLOT"].ToString().Split('/')[2].ToString();
+                txtTecnologia.Text = "GPON - " + drOlt["FABRICANTE"].ToString();
+                txtOnt.Text = drOlt["ONT_ID"].ToString();
+                if (drOlt["VLAN_OUTER_INNER"].ToString().Trim() != "")
+                {
+                    txtVlanInner.Text = drOlt["VLAN_OUTER_INNER"].ToString().Split(':')[0].ToString();
+                    txtVlan.Text = drOlt["VLAN_OUTER_INNER"].ToString().Split(':')[1].ToString();
+                }
+                txtVlanCompartilhada.Text = drOlt["VLAN_BANDA_LARGA"].ToString();
+                txtCliente.Text = drOlt["CLIENTE"].ToString();
+                txtProduto.Text = drOlt["PRODUTO"].ToString();
+                txtBandaMB.Text = drOlt["BANDA_MB"].ToString();
+                txtBandaUpLink.Text = drOlt["BANDA_UPLINK"].ToString();
+                txtSerial.Text = drOlt["SERIAL"].ToString();
+                txtDtValidadeReserva.Text = drOlt["VALIDADE_RESERVA"].ToString();
+                txtLogradouro.Text = drOlt["LOGRADOURO"].ToString();
+                ddlBairro.Items.Add(new ListItem(drOlt["BAIRRO"].ToString()));
+                txtNumeroLote.Text = drOlt["NUMERO_LOTE"].ToString();
+            }
+            else
+            {
+                if (Session["olt_search"] != null)
+                    olt = (Olt)Session["olt_search"];
+
+                txtOlt.Text = olt.nome;
+                txtModelo.Text = olt.modelo;
+                txtIPOlt.Text = olt.ipOlt;
+                txtShelf.Text = olt.shelf;
+                txtSlot.Text = olt.slot;
+                txtPorta.Text = olt.porta;
+                txtTecnologia.Text = "GPON " + olt.tecnologia;
+                txtVlanInner.Text = olt.vlan_inner;
+                txtVlan.Text = olt.vlan_outer;
+                Session["olt_search"] = null;
+            }
+        }
+
+        private void setOlt()
+        {
+            olt.idSubPorta = (Session["ID_SUB_PORTA"] != DBNull.Value ? Convert.ToInt32(Session["ID_SUB_PORTA"]) : 0);
+            olt.idComponent = Convert.ToInt32(Session["COMPONENT_ID_PORTA_OLT"]);
+            olt.status = ddlStatus.SelectedValue;
+            olt.circuito = txtCircuito.Text;
+            olt.cliente = txtCliente.Text;
+            olt.banda_mb = txtBandaMB.Text;
+            olt.banda_uplink = txtBandaUpLink.Text;
+            olt.serial = txtSerial.Text;
+            olt.produto = txtProduto.Text;
+            olt.bairro = Request.Form["ctl00$ContentPlaceHolder$ddlBairro"];
+            olt.nro_lote = txtNumeroLote.Text;
+            olt.validade_reserva = txtDtValidadeReserva.Text.Replace("/", string.Empty);
+            olt.vlan_outer = txtVlan.Text;
+            olt.vlan_inner = txtVlanInner.Text;
+            olt.ont_id = txtOnt.Text;
+            olt.idlogradouro = (hfLogradouro.Value != "" ? Convert.ToInt32(hfLogradouro.Value) : 0);
+            olt.localidade = txtLocalidade.Text;
+        }
+
+        private void setFacilityHistoric(DataRow drOlt)
+        {
+            facility.usuario = Session["usuario"].ToString();
+            facility.cto = txtCto.Text;
+            facility.cnl = txtCnl.Text;
+            facility.localidade = txtLocalidade.Text;
+            facility.porta_cto = txtPortaCTO.Text;
+            facility.ip_olt = txtIPOlt.Text;
+            facility.shelf = txtShelf.Text;
+            facility.slot = txtSlot.Text;
+            facility.porta = txtPorta.Text;
+
+            facility.circuito_antigo = cto.circuito;
+            facility.circuito_novo = txtCircuito.Text;
+            facility.status_antigo = cto.status;
+            facility.status_novo = ddlStatus.SelectedValue;
+
+            facility.cliente_antigo = (drOlt != null ? drOlt["CLIENTE"].ToString() : string.Empty);
+            facility.cliente_novo = txtCliente.Text;
+            facility.produto_antigo = (drOlt != null ? drOlt["PRODUTO"].ToString() : string.Empty);
+            facility.produto_novo = txtProduto.Text;
+            facility.banda_mb_antigo = (drOlt != null ? drOlt["BANDA_MB"].ToString() : string.Empty);
+            facility.banda_mb_novo = txtBandaMB.Text;
+            facility.banda_uplink_antigo = (drOlt != null ? drOlt["BANDA_UPLINK"].ToString() : string.Empty);
+            facility.banda_uplink_novo = txtBandaUpLink.Text;
+            facility.ont_id_antigo = (drOlt != null ? drOlt["ONT_ID"].ToString() : string.Empty);
+            facility.ont_id_novo = txtOnt.Text;
+            facility.serial_antigo = (drOlt != null ? drOlt["SERIAL"].ToString() : string.Empty);
+            facility.serial_novo = txtSerial.Text;
+            facility.vlan_inner_antigo = (drOlt != null ? (drOlt["VLAN_OUTER_INNER"].ToString().Trim() != "" ? drOlt["VLAN_OUTER_INNER"].ToString().Split(':')[0].ToString() : "") : string.Empty);
+            facility.vlan_inner_novo = txtVlanInner.Text;
+            facility.vlan_antigo = (drOlt != null ? (drOlt["VLAN_OUTER_INNER"].ToString().Trim() != "" ? drOlt["VLAN_OUTER_INNER"].ToString().Split(':')[1].ToString() : "") : string.Empty);
+            facility.vlan_novo = txtVlan.Text;
+            facility.validade_reserva_antigo = (drOlt != null ? drOlt["VALIDADE_RESERVA"].ToString() : string.Empty);
+            facility.validade_reserva_novo = txtDtValidadeReserva.Text;
+        }
+
+        private void save(string acao)
+        {
+            try
+            {
+
+                setOlt();
+                setFacilityHistoric(drOlt);
+
+                OperationsCmApiBll operationsCmApiBll = new OperationsCmApiBll();
+                operationsCmApiBll.atualizaFacilidades(Convert.ToInt32(Session["POINT_ID"]), txtCircuito.Text, ddlStatus.SelectedValue, olt, facility, acao);
+                
+                if (acao.Equals("LIBERAR"))
+                {
+                    Session["FILTRO_LIBERADO"] = cto.nome;
+                    Response.Redirect("search", false);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Utility.Alertbootsrap(ex.Message, this, UpSave);
+            }
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            AlertConfirmBootstrap.btn_Click += new EventHandler(btnConfirmaOk_ButtonClick);
+            if (!Page.IsPostBack)
+                fillFields();
+        }
+
+        protected void lbSalvar_Click(object sender, EventArgs e)
+        {
+            save("SALVAR");
+        }
+
+        protected void btnConfirmaOk_ButtonClick(object sender, EventArgs e)
+        {
+            save("LIBERAR");
+        }
+
+        protected void lbLiberar_Click(object sender, EventArgs e)
+        {
+            Utility.AlertbootsrapConfirm("Deseja Realmente Liberar essa Facilidade?", this, UpSave);
+        }
+
+
+    }
+}

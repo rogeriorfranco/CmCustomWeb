@@ -1,0 +1,18 @@
+﻿using CmCustomDal;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomBll
+{
+    public class OperationsCmApiBll
+    {
+        IOperationsCmApiDal operationsCmAPI = new OperationsCmApiDal();
+        public void atualizaPontoCompoment(int compPointID, string circuito, string status)
+        {
+            operationsCmAPI.atualizaPontoCompoment(compPointID, circuito, status);
+        }
+    }
+}

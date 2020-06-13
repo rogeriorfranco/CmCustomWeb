@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public class Utility
+{
+    /// <summary>
+    /// Método de paginação do gridview
+    /// </summary>
+    /// <param name="gridView">passar o nome do gridview</param>
+    /// <param name="e"></param>
+    /// <param name="dt">fonte de dados</param>
+    public static void PaginacaoGridView(GridView gridView, GridViewPageEventArgs e, object dt)
+    {
+        gridView.DataSource = dt;
+        gridView.PageIndex = e.NewPageIndex;
+        gridView.DataBind();
+    }
+
+    public static void Alertbootsrap(string msg, Page page)
+    {
+        try
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine("$(document).ready(function() {");
+            sb.AppendLine("$('.modal-body #modalId').html('" + msg + "') ");
+            sb.AppendLine("$('#myModal').modal('show');");
+            sb.AppendLine(" });");
+            UserControl uc = (UserControl)page.LoadControl(@"~/UserControls/UserControlAlertBootstrap.ascx");
+            page.Controls.Add(uc);
+            ScriptManager.RegisterClientScriptBlock(page, typeof(Page), Guid.NewGuid().ToString(), sb.ToString(), true);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+}

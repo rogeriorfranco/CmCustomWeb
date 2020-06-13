@@ -1,0 +1,63 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace CmCustomUi
+{
+    public partial class Site : System.Web.UI.MasterPage
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            //if (!Page.IsPostBack)
+            //{
+            //    carregaDadosUsuario();                
+            //} 
+        }
+
+        private void carregaDadosUsuario()
+        {
+            if (Session["nomeAssociado"] != null)
+            {
+                TimeSpan tspan = DateTime.Now.TimeOfDay;
+                if (((tspan >= new TimeSpan(6, 0, 0)) && (tspan <= new TimeSpan(12, 0, 0))))
+                {
+                    lblBemVindo.Text = "Bom Dia!";
+                }
+                else if (((tspan >= new TimeSpan(12, 0, 0)) && (tspan <= new TimeSpan(19, 0, 0))))
+                {
+                    lblBemVindo.Text = "Boa Tarde!";
+                }
+                else
+                {
+                    lblBemVindo.Text = "Boa Noite!";
+                }
+
+                lblUserLogin.Text = Session["nomeAssociado"].ToString();
+                lblAcesso.Text = "Último Acesso efetuado em " + Session["ultimoAcesso"].ToString();
+                lblPerfil.Text = Session["perfil"].ToString();
+                lblEmail.Text = Session["email"].ToString();
+                lblCR.Text = Session["centroResultado"].ToString();
+                lblCPF.Text = Session["CPF"].ToString();                
+            }
+            else
+            {
+                Response.Redirect("Login");
+            }
+        }
+
+        protected void lbSair_Click(object sender, EventArgs e)
+        {
+            Session.Abandon();
+            Response.Redirect("~/Login");
+        }
+
+        protected void imbHome_Click(object sender, ImageClickEventArgs e)
+        {            
+            Response.Redirect("~/Home");
+        }
+
+    }
+}

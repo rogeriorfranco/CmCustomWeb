@@ -1,0 +1,15 @@
+﻿using CmCustomDal;
+using System.Data;
+
+namespace CmCustomBll
+{
+    public class ReportBll
+    {
+        IReportDal relatorioDal = new ReportDal();
+
+        public DataTable relatorioBandaOltTotal(string olt)
+        {
+            return relatorioDal.relatorioBandaOltTotal(olt);
+        }
+    }
+}

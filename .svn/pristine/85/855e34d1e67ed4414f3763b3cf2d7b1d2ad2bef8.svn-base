@@ -1,0 +1,154 @@
+﻿using CmCustomDal;
+using CmCustomDto;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomBll
+{
+    public class OperationsCmApiBll
+    {
+        IOperationsCmApiDal operationsCmAPI = new OperationsCmApiDal();
+        public void atualizaFacilidades(int compPointID, Olt olt, Facility facility, string acao)
+        {
+            try
+            {
+                IFacilityHistoricDal facilityHistoricDal = new FacilityHistoricDal();
+                olt.acao = acao;
+
+                if (acao.Equals("SALVAR"))
+                {
+                    if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO")) && string.IsNullOrEmpty(olt.circuito.Trim()))
+                        throw new Exception("O preenchimento do Circuito é obrigatório para o status OCUPADO e DESIGNADO");
+
+                    FacilityDal facilityDal = new FacilityDal();
+                    if (facilityDal.getCountCircuit(olt.circuito.Trim(), olt.status, compPointID) >= 1)
+                        throw new Exception("Já existe esse circuito alocado no Connect Master com status: " + olt.status);
+
+                    if (olt.idSubPorta != 0)
+                    {
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.cliente.Trim()))
+                            throw new Exception("O preenchimento do Cliente é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.produto.Trim()))
+                            throw new Exception("O preenchimento do Produto é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.banda_mb.Trim()))
+                            throw new Exception("O preenchimento do Banda MB é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if ((olt.status.Equals("OCUPADO") || olt.status.Equals("DESIGNADO") || olt.status.Equals("RESERVADO")) && string.IsNullOrEmpty(olt.banda_uplink.Trim()))
+                            throw new Exception("O preenchimento do Banda UPLINK é obrigatório para o status OCUPADO, DESIGNADO e RESERVADO");
+
+                        if (olt.status.Equals("OCUPADO") && string.IsNullOrEmpty(olt.serial.Trim()))
+                            throw new Exception("O preenchimento do Serial é obrigatório para o status OCUPADO");
+
+                        if (olt.status.Equals("OCUPADO") && string.IsNullOrEmpty(olt.ont_id.Trim()))
+                            throw new Exception("O preenchimento do Ont ID é obrigatório para o status OCUPADO");
+                    }
+                    else
+                    {
+                        operationsCmAPI.atualizaPontoCompoment(compPointID, olt.circuito.Trim(), olt.status);
+                        facilityHistoricDal.save(facility);
+                        throw new Exception("Circuito registrado apenas na CTO, " + olt.nome + " sem sub porta disponivel");
+                    }
+
+                    operationsCmAPI.atualizaPontoCompoment(compPointID, olt.circuito.Trim(), olt.status);
+                    operationsCmAPI.atualizaAtributosPortaOLT(olt);
+                    facilityHistoricDal.save(facility);
+                    throw new Exception("Facilidades alteradas");
+                }
+
+                if (acao.Equals("LIBERAR"))
+                {
+                    operationsCmAPI.atualizaPontoCompoment(compPointID, string.Empty, "VAGO");
+                    operationsCmAPI.atualizaAtributosPortaOLT(clearOlt(olt));
+                    facilityHistoricDal.save(clearfacility(facility));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+
+        }
+
+        private Olt clearOlt(Olt olt)
+        {
+            olt.status = "VAGO";
+            olt.circuito = string.Empty;
+            olt.cliente = string.Empty;
+            olt.banda_mb = "0";
+            olt.banda_uplink = "0";
+            olt.serial = string.Empty;
+            olt.produto = string.Empty;
+            olt.bairro = string.Empty;
+            olt.nro_lote = "0";
+            olt.validade_reserva = string.Empty;
+            olt.idlogradouro = 0;
+            if (olt.acao.Equals("REDESIGNAR"))
+            {
+                olt.compl_nivel_1 = string.Empty;
+                olt.compl_nivel_1_descricao = string.Empty;
+                olt.compl_nivel_2 = string.Empty;
+                olt.compl_nivel_2_descricao = string.Empty;
+                olt.compl_nivel_3 = string.Empty;
+                olt.compl_nivel_3_descricao = string.Empty;
+            }
+            return olt;
+        }
+
+        private Facility clearfacility(Facility facility)
+        {
+            facility.circuito_novo = string.Empty;
+            facility.status_novo = string.Empty;
+            facility.cliente_novo = string.Empty;
+            facility.produto_novo = string.Empty;
+            facility.banda_mb_novo = string.Empty;
+            facility.banda_uplink_novo = string.Empty;
+            facility.ont_id_novo = string.Empty;
+            facility.serial_novo = string.Empty;
+            facility.vlan_inner_novo = string.Empty;
+            facility.vlan_novo = string.Empty;
+            facility.validade_reserva_novo = string.Empty;
+            return facility;
+        }
+
+        public string getSession()
+        {
+            return operationsCmAPI.getSession();
+        }
+
+        public void redesignateFacility(int pointIdActual, int subPortaIdActual, int pointIdNew, int subPortaIdNew, string circuito, string status)
+        {
+            try
+            {
+                operationsCmAPI.atualizaPontoCompoment(pointIdNew, circuito, status);
+                FacilityDal facilityDal = new FacilityDal();
+                Olt olt = new Olt();
+                olt = facilityDal.getOLTAttributsByIdSubPorta(subPortaIdActual);
+                olt.idSubPorta = subPortaIdNew;
+                olt.acao = "REDESIGNAR";
+                operationsCmAPI.atualizaAtributosPortaOLT(olt);
+
+                operationsCmAPI.atualizaPontoCompoment(pointIdActual, string.Empty, "VAGO");
+                olt.idSubPorta = subPortaIdActual;
+                operationsCmAPI.atualizaAtributosPortaOLT(clearOlt(olt));
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public int CreateAttributSubPorts(int idComponent)
+        {
+            return operationsCmAPI.CreateAttributSubPorts(idComponent);
+        }
+    }
+}

@@ -1,0 +1,70 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDal
+{
+    public class RelatorioDal : IRelatorioDal
+    {
+        StringBuilder sql = new StringBuilder();
+
+        public DataTable relatorioBandaOltTotal(string olt)
+        {
+            try
+            {
+                sql.Append("SELECT * FROM( ");
+                sql.Append("  SELECT ");
+
+                sql.Append("    SUM((SELECT ATT.A_VALUE ");
+                sql.Append("    FROM ARD_ATTR_RED ATT ");
+                sql.Append("    WHERE ATT.AT_NAME = 'BANDA_MB' ");
+                sql.Append("    AND ATT.LINK_ID = SUB.CAP_ID)) AS BANDA_MB ");
+
+                sql.Append("    ,SUM((SELECT ATT.A_VALUE ");
+                sql.Append("    FROM ARD_ATTR_RED ATT ");
+                sql.Append("    WHERE ATT.AT_NAME = 'BANDA_UPLINK' ");
+                sql.Append("    AND ATT.LINK_ID = SUB.CAP_ID)) AS BANDA_UPLINK ");
+
+                sql.Append("    ,(SELECT C.COMPONENT_NAME ");
+                sql.Append("    FROM COMPONENT C ");
+                sql.Append("    WHERE C.COMPONENT_ID = SUB.CONT_ID) AS OLT ");
+
+                sql.Append("    FROM( ");
+
+                sql.Append("    SELECT CAP.CAP_ID, ELM.CONT_ID ");
+                sql.Append("    FROM CCAP_CARD_CAP CAP ");
+                sql.Append("    ,COEL_CONT_ELEM ELM ");
+                sql.Append("    WHERE ELM.ELEM_ID = CAP.COMPONENT_ID ");
+                sql.Append("    AND CAP.COMPONENT_ID IN ");
+                sql.Append("    (SELECT EL.ELEM_ID ");
+                sql.Append("    FROM COEL_CONT_ELEM EL ");
+                sql.Append("    WHERE EL.CONT_ID IN ");
+
+                sql.Append("      (SELECT CO.COMPONENT_ID FROM COMPONENT CO ");
+                sql.Append("       WHERE CO.CATEGORY_ID = 6 ");
+                sql.Append("       AND CO.SUBCATEGORYID = 213)) ");
+
+                sql.Append("    )SUB ");
+
+                sql.Append("   GROUP BY SUB.CONT_ID ");
+                sql.Append(")SSUB ");
+
+                if (olt != "")
+                    sql.Append("WHERE SSUB.OLT LIKE '%" + olt.ToUpper() + "%' ");
+
+                return ConnectionOracleDal.ExecutaSqlRetorno(sql.ToString()).Tables[0];
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex.InnerException);
+            }
+            finally
+            {
+                sql.Clear();
+            }
+        }
+    }
+}

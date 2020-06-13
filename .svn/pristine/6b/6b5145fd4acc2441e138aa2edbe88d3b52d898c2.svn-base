@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CmCustomDto
+{
+    public class Olt
+    {
+        public string modelo { get; set; }
+        public string ipOlt { get; set; }
+        public string nome { get; set; }
+        public string shelf { get; set; }
+        public string slot { get; set; }
+        public string porta { get; set; }
+        public string tecnologia { get; set; }
+    }
+}
+

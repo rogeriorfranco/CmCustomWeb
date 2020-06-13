@@ -1,0 +1,248 @@
+﻿<%@ Page Title="" Language="C#" EnableEventValidation="false" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="search.aspx.cs" Inherits="CmCustomUi.viability.search" %>
+
+<%@ Register Src="~/userControls/UserControlUpdateProgress.ascx" TagPrefix="uc1" TagName="UserControlUpdateProgress" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder" runat="server">
+    <link href="../content/jquery-ui.theme.min.css" rel="stylesheet" />
+    <script src="../scripts/jquery-ui-auto-complete.min.js"></script>
+    <script src="../scripts/locality.js"></script>
+    <section class="content-header">
+        <h1>Consulta Viabilidade</h1>
+    </section>
+
+    <section class="content">
+        <div class="box box-primary">
+            <div class="box-body">
+                <asp:UpdatePanel ID="upMsg" runat="server">
+                    <ContentTemplate>
+                        <div id="divMsg" runat="server" visible="false">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                            <asp:Label ID="lblMsg" runat="server"></asp:Label>
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <div class='row'>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <asp:DropDownList ID="ddlEstado" runat="server" class="form-control input-sm" ClientIDMode="Static">
+                                <asp:ListItem Value="AC">Acre</asp:ListItem>
+                                <asp:ListItem Value="AL">Alagoas</asp:ListItem>
+                                <asp:ListItem Value="AP">Amapá</asp:ListItem>
+                                <asp:ListItem Value="AM">Amazonas</asp:ListItem>
+                                <asp:ListItem Value="BA">Bahia</asp:ListItem>
+                                <asp:ListItem Value="CE">Ceara</asp:ListItem>
+                                <asp:ListItem Value="DF">Distrito Federal</asp:ListItem>
+                                <asp:ListItem Value="ES">Espirito Santo</asp:ListItem>
+                                <asp:ListItem Value="GO">Goias</asp:ListItem>
+                                <asp:ListItem Value="MA">Maranhão</asp:ListItem>
+                                <asp:ListItem Value="MT">Mato Grosso</asp:ListItem>
+                                <asp:ListItem Value="MS">Mato Grosso do Sul</asp:ListItem>
+                                <asp:ListItem Value="MG">Minas Gerais</asp:ListItem>
+                                <asp:ListItem Value="PA">Para</asp:ListItem>
+                                <asp:ListItem Value="PB">Paraiba</asp:ListItem>
+                                <asp:ListItem Value="PR">Paraná</asp:ListItem>
+                                <asp:ListItem Value="PE">Pernambuco</asp:ListItem>
+                                <asp:ListItem Value="PI">Piaui</asp:ListItem>
+                                <asp:ListItem Value="RJ">Rio de Janeiro</asp:ListItem>
+                                <asp:ListItem Value="RN">Rio Grande do Norte</asp:ListItem>
+                                <asp:ListItem Value="RS">Rio Grande do Sul</asp:ListItem>
+                                <asp:ListItem Value="RO">Rondonia</asp:ListItem>
+                                <asp:ListItem Value="RR">Roraima</asp:ListItem>
+                                <asp:ListItem Value="SC">Santa Catarina</asp:ListItem>
+                                <asp:ListItem Value="SP">Sao Paulo</asp:ListItem>
+                                <asp:ListItem Value="SE">Sergipe</asp:ListItem>
+                                <asp:ListItem Value="TO">Tocantins</asp:ListItem>
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Município</label>
+                            <asp:RequiredFieldValidator ID="rftxtMunicipio" runat="server" ControlToValidate="txtMunicipio" ErrorMessage="*" Style="color: #FF3300"></asp:RequiredFieldValidator>
+                            <asp:TextBox ID="txtMunicipio" runat="server" CssClass="form-control input-sm" ClientIDMode="Static"></asp:TextBox>
+                            <asp:HiddenField ID="hfMunicipio" runat="server" ClientIDMode="Static" />
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Localidade</label>
+                            <asp:RequiredFieldValidator ID="rftxtLocalidade" runat="server" ControlToValidate="txtLocalidade" ErrorMessage="*" Style="color: #FF3300"></asp:RequiredFieldValidator>
+                            <asp:TextBox ID="txtLocalidade" runat="server" CssClass="form-control input-sm" ClientIDMode="Static"></asp:TextBox>
+                            <asp:HiddenField ID="hfLocalidade" runat="server" ClientIDMode="Static" />
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3">
+                        <label>Logradouro</label>
+                        <asp:RequiredFieldValidator ID="rfvtxtLogradouro" runat="server" ControlToValidate="txtLogradouro" ErrorMessage="*" Style="color: #FF3300"></asp:RequiredFieldValidator>
+                        <asp:TextBox ID="txtLogradouro" runat="server" CssClass="form-control input-sm" ClientIDMode="Static"></asp:TextBox>
+                        <asp:HiddenField ID="hfLogradouro" runat="server" ClientIDMode="Static" />
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label>Bairro</label>
+                            <asp:DropDownList ID="ddlBairro" runat="server" class="form-control input-sm" ClientIDMode="Static">
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+                    <div class="col-sm-1">
+                        <label>Número</label>
+                        <asp:RequiredFieldValidator ID="rfvtxtNumero" runat="server" ControlToValidate="txtNumero" ErrorMessage="*" Style="color: #FF3300"></asp:RequiredFieldValidator>
+                        <asp:TextBox ID="txtNumero" ClientIDMode="Static" runat="server" CssClass="form-control input-sm"></asp:TextBox>
+                    </div>
+
+                    <div class="container-fluid">
+                        <div class="row">
+                            <asp:UpdatePanel ID="upPesquisar" runat="server">
+                                <ContentTemplate>
+                                    <div class="col-md-6">
+                                        <asp:LinkButton ID="lbDesignar" Visible="false" ClientIDMode="Static" runat="server" CssClass="btn btn-success" OnClick="lbDesignar_Click"><i class="fa fa-edit"></i> Designar</asp:LinkButton>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <asp:LinkButton ID="lbPesquisar" ClientIDMode="Static" runat="server" CssClass="btn btn-primary" OnClick="lbPesquisar_Click"><i class="fa fa-search"></i> Pesquisar</asp:LinkButton>
+                                    </div>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                        </div>
+                    </div>
+
+                    <hr />
+                    <asp:UpdatePanel ID="upBody" runat="server">
+                        <ContentTemplate>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Cto</label>
+                                    <asp:TextBox ID="txtCto" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Estação</label>
+                                    <asp:TextBox ID="txtEstacao" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Localidade</label>
+                                    <asp:TextBox ID="txtLocal" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Cnl</label>
+                                    <asp:TextBox ID="txtCnl" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Porta Cto</label>
+                                    <asp:TextBox ID="txtPortaCto" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <asp:TextBox ID="txtStatus" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Inner Vlan </label>
+                                    <asp:TextBox ID="txtInnerVlan" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Vlan</label>
+                                    <asp:TextBox ID="txtVlan" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-2'>
+                                <div class="form-group">
+                                    <label>Shelf</label>
+                                    <asp:TextBox ID="txtShelf" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-2'>
+                                <div class="form-group">
+                                    <label>Slot</label>
+                                    <asp:TextBox ID="txtSlot" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-2'>
+                                <div class="form-group">
+                                    <label>Porta Fisíca PON</label>
+                                    <asp:TextBox ID="txtPortaFisica" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Ip Olt</label>
+                                    <asp:TextBox ID="txtIpOlt" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Vlan Vobb</label>
+                                    <asp:TextBox ID="txtVlanVobb" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Olt</label>
+                                    <asp:TextBox ID="txtOlt" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Modelo Olt</label>
+                                    <asp:TextBox ID="txtModeloOlt" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Porta Logíca</label>
+                                    <asp:TextBox ID="txtPortaLogica" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            <div class='col-sm-3'>
+                                <div class="form-group">
+                                    <label>Velocidades</label>
+                                    <asp:TextBox ID="txtVelocidades" runat="server" ClientIDMode="Static" CssClass="form-control input-sm"></asp:TextBox>
+                                </div>
+                            </div>
+
+                            </div>
+                        </ContentTemplate>
+                    </asp:UpdatePanel>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <uc1:UserControlUpdateProgress runat="server" ID="UserControlUpdateProgress" />
+
+
+</asp:Content>
